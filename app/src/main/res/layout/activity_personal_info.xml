@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- 顶部标题栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@android:color/white"
+        android:padding="16dp">
+
+        <!-- 返回按钮 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/back_img"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            app:tint="@android:color/black" />
+
+        <!-- 标题文字 -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="个人信息"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
+    <!-- 信息展示布局 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 头像 -->
+        <LinearLayout
+            android:id="@+id/ll_avatar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="头像"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <ImageView
+                android:id="@+id/iv_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/default_avatar"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/iv_edit_avatar"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/tab_img"
+                android:contentDescription="@string/edit" />
+        </LinearLayout>
+
+        <!-- 昵称 -->
+        <LinearLayout
+            android:id="@+id/ll_nickname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="昵称"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/tv_nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未设置"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/iv_edit_nickname"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/tab_img"
+                android:contentDescription="@string/edit" />
+        </LinearLayout>
+
+        <!-- 账号 -->
+        <LinearLayout
+            android:id="@+id/ll_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="账号"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/tv_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="123456"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/iv_edit_account"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/tab_img"
+                android:contentDescription="@string/edit" />
+        </LinearLayout>
+
+        <!-- 性别 -->
+        <LinearLayout
+            android:id="@+id/ll_gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="性别"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/tv_gender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未设置"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/iv_edit_gender"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/tab_img"
+                android:contentDescription="@string/edit" />
+        </LinearLayout>
+
+        <!-- 地区 -->
+        <LinearLayout
+            android:id="@+id/ll_region"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="地区"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/tv_region"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="未设置"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginEnd="16dp" />
+
+            <ImageView
+                android:id="@+id/iv_edit_region"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/tab_img"
+                android:contentDescription="@string/edit" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

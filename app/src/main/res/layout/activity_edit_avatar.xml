@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <!-- 自定义裁剪视图 -->
+    <com.canhub.cropper.CropImageView
+        android:id="@+id/cropImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 底部按钮栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="16dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/color_img_edi">
+
+        <!-- 取消按钮 -->
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="取消"
+            android:background="@color/color_img_edi"
+            android:textColor="@android:color/white" />
+
+        <!-- 撤销按钮 -->
+        <ImageButton
+            android:id="@+id/btn_undo"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/undo"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+             />
+
+        <!-- 旋转按钮 -->
+        <ImageButton
+            android:id="@+id/btn_rotate"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/rotate"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+             />
+
+        <!-- 保存按钮 -->
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="保存"
+            android:background="@drawable/btn_style_green"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</RelativeLayout>

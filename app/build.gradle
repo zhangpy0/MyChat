@@ -1,0 +1,105 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'top.zhangpy.mychat'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "top.zhangpy.mychat"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        viewBinding true
+    }
+
+    viewBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.6.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+
+
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit-mock
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.11.0'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-gson
+    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-jackson
+    implementation 'com.squareup.retrofit2:converter-jackson:2.11.0'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/adapter-rxjava
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.11.0'
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/logging-interceptor
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+
+
+
+    def room_version = "2.6.1"
+
+    implementation "androidx.room:room-runtime:$room_version"
+
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See KSP Quickstart to add KSP to your build
+//    ksp "androidx.room:room-compiler:$room_version"
+
+    // If this project only uses Java source, use the Java annotationProcessor
+    // No additional plugins are necessary
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+//    // optional - RxJava2 support for Room
+//    implementation "androidx.room:room-rxjava2:$room_version"
+//
+//    // optional - RxJava3 support for Room
+//    implementation "androidx.room:room-rxjava3:$room_version"
+//
+//    // optional - Guava support for Room, including Optional and ListenableFuture
+//    implementation "androidx.room:room-guava:$room_version"
+//
+    // optional - Test helpers
+    testImplementation "androidx.room:room-testing:$room_version"
+//
+//    // optional - Paging 3 Integration
+//    implementation "androidx.room:room-paging:$room_version"
+
+    // https://mvnrepository.com/artifact/com.github.bumptech.glide/glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+
+    // https://mvnrepository.com/artifact/com.vanniktech/android-image-cropper
+    implementation 'com.vanniktech:android-image-cropper:4.6.0'
+
+
+}
