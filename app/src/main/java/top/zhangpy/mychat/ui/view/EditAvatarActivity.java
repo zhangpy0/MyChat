@@ -86,6 +86,12 @@ public class EditAvatarActivity extends AppCompatActivity {
             }
         });
 
+        viewModel.getUpdateResult().observe(this, success -> {
+            if (success) {
+                finish();
+            }
+        });
+
         launcher.launch(intent);
     }
 
@@ -113,7 +119,8 @@ public class EditAvatarActivity extends AppCompatActivity {
 
             String newPath = viewModel.updateUserAvatar(file.getAbsolutePath());
             resultIntent.putExtra("result_avatar", newPath);
-            finish();
+            setResult(RESULT_OK, resultIntent);
+
 
         } catch (IOException e) {
             Log.e("EditAvatarActivity", "保存失败", e);

@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Base64;
 import java.util.Objects;
 
@@ -96,18 +95,44 @@ public class StorageHelper {
 
         // 创建目标文件
         File targetFile = new File(targetDir, fileName);
-//        String targetPath = targetFile.getAbsolutePath();
+        String targetPath = targetFile.getAbsolutePath();
+
+        // 确保目标文件的父目录存在，不存在则创建
         if (!Objects.requireNonNull(targetFile.getParentFile()).exists()) {
             targetFile.getParentFile().mkdirs();
         }
-        int i = 1;
+
         while (targetFile.exists()) {
-            String [] split = fileName.split("\\.");
-            fileName = split[0] + "(" + i +")." + split[1];
+            // 检查是否已有类似 "(1)" 的数字后缀
+            int dotIndex = fileName.lastIndexOf(".");
+            String baseName;
+            String extension = "";
+
+            if (dotIndex != -1) {
+                baseName = fileName.substring(0, dotIndex);
+                extension = fileName.substring(dotIndex);
+            } else {
+                baseName = fileName;
+            }
+
+            // 使用正则匹配 "(数字)" 后缀
+            String pattern = "^(.*)\\((\\d+)\\)$";
+            java.util.regex.Pattern regex = java.util.regex.Pattern.compile(pattern);
+            java.util.regex.Matcher matcher = regex.matcher(baseName);
+
+            int number = 1;
+            if (matcher.matches()) {
+                // 如果已包含数字后缀，提取基础名和数字
+                baseName = matcher.group(1).trim();
+                number = Integer.parseInt(matcher.group(2)) + 1;
+            }
+
+            // 添加或更新数字后缀
+            fileName = baseName + "(" + number + ")" + extension;
             targetFile = new File(targetDir, fileName);
-//            targetPath = targetFile.getAbsolutePath();
-            i++;
+            targetPath = targetFile.getAbsolutePath();
         }
+
         try {
             // 写入文件内容
             FileOutputStream fos = new FileOutputStream(targetFile);
@@ -139,16 +164,13 @@ public class StorageHelper {
     }
 
     public static void copyFile(File cachedAvatar, File newAvatar) {
+
         try (InputStream in = new FileInputStream(cachedAvatar);
-             OutputStream out = new FileOutputStream(newAvatar)) {
+             FileOutputStream out = new FileOutputStream(newAvatar)) {
             byte[] buffer = new byte[1024];
             int length;
             while ((length = in.read(buffer)) > 0) {
                 out.write(buffer, 0, length);
-            }
-            // 删除原文件
-            if (!cachedAvatar.delete()) {
-                Log.e("StorageHelper", "Failed to delete cachedAvatar");
             }
         } catch (IOException e) {
             Log.e("StorageHelper", "File copy failed", e);

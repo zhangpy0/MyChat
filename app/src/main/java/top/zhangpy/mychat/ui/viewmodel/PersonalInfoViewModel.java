@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.util.StorageHelper;
@@ -22,6 +23,9 @@ import top.zhangpy.mychat.util.StorageHelper;
 public class PersonalInfoViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
+
+    @Getter
+    private final MutableLiveData<Boolean> updateResult = new MutableLiveData<>(false);
 
     private final MutableLiveData<String> avatarPath = new MutableLiveData<>(""); // 头像 URL 或路径
     private final MutableLiveData<String> nickname = new MutableLiveData<>("未设置");
@@ -116,6 +120,7 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 userProfile.setGender(Objects.equals(gender.getValue(), "男") ? "male" : "female");
                 userProfile.setAvatarPath(avatarPath.getValue());
                 userRepository.updateUserProfile(userProfile);
+                updateResult.postValue(true);
             } catch (Exception e) {
                 Log.e("PersonalInfoViewModel", "updateToLocalAndServer: ", e);
             }
@@ -134,8 +139,13 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 UserProfile userProfile = userRepository.getUserProfileById(userId);
                 File newAvatarDir = StorageHelper.getUserAvatarDirectory(getApplication().getApplicationContext(), String.valueOf(userId));
                 File newAvatar = new File(newAvatarDir, userId + "_avatar.jpg");
+                if (newAvatar.exists() && !newAvatar.delete()) {
+                    Log.e("PersonalInfoViewModel", "updateUserAvatar: delete old avatar failed");
+                    return;
+                }
                 File cachedAvatar = new File(newAvatarPath);
                 if (!newAvatarDir.exists() && !newAvatarDir.mkdirs()) {
+                    Log.e("PersonalInfoViewModel", "updateUserAvatar: create new avatar directory failed");
                     return;
                 }
                 if (cachedAvatar.exists()) {
@@ -145,6 +155,8 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 userRepository.updateUserProfile(userProfile);
                 userRepository.updateUserAvatar(token, String.valueOf(userId), newAvatar.getAbsolutePath());
                 newPath.set(newAvatar.getAbsolutePath());
+                updateResult.postValue(true);
+                Log.d("PersonalInfoViewModel", "updateUserAvatar: success");
             } catch (Exception e) {
                 Log.e("PersonalInfoViewModel", "updateUserAvatar: ", e);
             }

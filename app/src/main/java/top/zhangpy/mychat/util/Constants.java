@@ -13,7 +13,7 @@ package top.zhangpy.mychat.util;
  */
 public class Constants {
 
-    public static final String SERVER_IP = "192.168.63.219";
+    public static final String SERVER_IP = "192.168.56.187";
 
     public static final int MAIN_SERVER_PORT = 8080;
 

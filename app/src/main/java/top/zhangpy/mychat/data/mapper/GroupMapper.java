@@ -36,9 +36,13 @@ public class GroupMapper {
         groupInfo.setGroupId(Integer.parseInt(groupInfoModel.getGroupId()));
         groupInfo.setGroupName(groupInfoModel.getGroupName());
         groupInfo.setAnnouncement(groupInfoModel.getAnnouncement());
+        if (groupInfoModel.getAvatar() == null || groupInfoModel.getAvatar().isEmpty()) {
+            groupInfo.setAvatarPath(null);
+            return groupInfo;
+        }
         String avatarName = "group_avatar_" + groupInfoModel.getGroupId() + ".jpg";
         InputStream avatar = StorageHelper.base64ToInputStream(groupInfoModel.getAvatar());
-        String path = StorageHelper.saveFile(context, "user", String.valueOf(groupInfoModel.getGroupId()), null, avatarName, avatar);
+        String path = StorageHelper.saveFile(context, "group", String.valueOf(groupInfoModel.getGroupId()), null, avatarName, avatar);
         groupInfo.setAvatarPath(path);
         return groupInfo;
     }

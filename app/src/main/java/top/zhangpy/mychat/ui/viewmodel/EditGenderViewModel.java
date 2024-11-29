@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.concurrent.Executors;
 
+import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
@@ -19,6 +20,9 @@ import top.zhangpy.mychat.data.repository.UserRepository;
 public class EditGenderViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
+
+    @Getter
+    private final MutableLiveData<Boolean> saveResult = new MutableLiveData<>(false);
 
     // 当前选择的性别
     private final MutableLiveData<String> selectedGender = new MutableLiveData<>("");
@@ -81,6 +85,8 @@ public class EditGenderViewModel extends AndroidViewModel {
                 UserProfile userProfile = userRepository.getUserProfileById(userId);
                 userProfile.setGender(newGender);
                 userRepository.updateUserProfile(userProfile);
+                saveResult.postValue(true);
+                Log.d("EditGenderViewModel", "updateGenderToLocalAndServer: success");
             } catch (Exception e) {
                 Log.e("EditGenderViewModel", "updateGenderToLocalAndServer: ", e);
             }

@@ -80,7 +80,7 @@ public class EditTextActivity extends AppCompatActivity {
                 Toast.makeText(this, "内容不能为空", Toast.LENGTH_SHORT).show();
             } else {
                 viewModel.updateToLocalAndServer(key);
-                fatherViewModel.updateUserInfoFromLocal();
+//                fatherViewModel.updateUserInfoFromLocal();
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("result_key", key);
                 if (key == 1) {
@@ -89,13 +89,18 @@ public class EditTextActivity extends AppCompatActivity {
                     resultIntent.putExtra(RESULT_TEXT, updatedText);
                 }
                 setResult(RESULT_OK, resultIntent);
-                finish();
             }
         });
 
         viewModel.getErrorMessage().observe(this, errorMessage -> {
             if (errorMessage != null) {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getUpdateResult().observe(this, saveResult -> {
+            if (saveResult) {
+                finish();
             }
         });
     }

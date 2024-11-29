@@ -42,7 +42,12 @@ public class PersonalInfoActivity extends AppCompatActivity {
         // 返回按钮事件
         binding.btnBack.setOnClickListener(v -> {
             viewModel.updateToLocalAndServer();
-            finish();
+        });
+
+        viewModel.getUpdateResult().observe(this, updateResult -> {
+            if (updateResult) {
+                finish();
+            }
         });
 
         viewModel.updateUserInfoFromLocal();

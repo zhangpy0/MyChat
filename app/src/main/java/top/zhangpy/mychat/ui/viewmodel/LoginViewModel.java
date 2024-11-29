@@ -29,6 +29,9 @@ import top.zhangpy.mychat.util.HashGenerator;
 
 @Getter
 public class LoginViewModel extends AndroidViewModel {
+
+    private final MutableLiveData<Boolean> loginResult = new MutableLiveData<>();
+
     private MutableLiveData<String> userIdOrEmail = new MutableLiveData<>();
     private MutableLiveData<String> password = new MutableLiveData<>();
     private MutableLiveData<Boolean> showError = new MutableLiveData<>();
@@ -58,10 +61,14 @@ public class LoginViewModel extends AndroidViewModel {
                 requestMapModel.setFriendId(String.valueOf(user.getUserId()));
                 UserProfileModel userProfileModel = userRepository.getUserProfile(user.getToken(), requestMapModel);
                 UserProfile userProfile = UserProfileMapper.mapToUserProfile(userProfileModel, getApplication().getApplicationContext());
-
+                UserProfile localUserProfile = userRepository.getUserProfileById(user.getUserId());
                 if (localUsers.isEmpty()) {
                     userRepository.insertUser(user);
-                    userRepository.insertUserProfile(userProfile);
+                    if (localUserProfile == null) {
+                        userRepository.insertUserProfile(userProfile);
+                    } else {
+                        userRepository.updateUserProfile(userProfile);
+                    }
                 } else {
                     for (User localUser : localUsers) {
                         if (localUser.getUserId().equals(user.getUserId())) {
@@ -87,6 +94,8 @@ public class LoginViewModel extends AndroidViewModel {
                 } else {
                     getApplication().getApplicationContext().startService(serviceIntent); // 低版本直接启动服务
                 }
+
+                loginResult.postValue(true);
             } catch (IOException e) {
                 showError.postValue(true);
                 errorMessage.postValue("Network error " + e.getMessage());

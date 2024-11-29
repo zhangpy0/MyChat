@@ -13,11 +13,15 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.concurrent.Executors;
 
+import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
 
 public class EditTextViewModel extends AndroidViewModel {
+
+    @Getter
+    private final MutableLiveData<Boolean> updateResult = new MutableLiveData<>(false);
 
     private final UserRepository userRepository;
 
@@ -103,6 +107,8 @@ public class EditTextViewModel extends AndroidViewModel {
                     userProfile.setRegion(text.getValue());
                     userRepository.updateUserProfile(userProfile);
                 }
+                updateResult.postValue(true);
+                Log.d("EditTextViewModel", "updateToLocalAndServer: success");
             } catch (Exception e) {
                 Log.e("EditTextViewModel", "updateToLocalAndServer: ", e);
             }

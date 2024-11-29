@@ -50,10 +50,16 @@ public class LoginActivity extends AppCompatActivity {
 
             // Perform login action
             loginViewModel.login();
+        });
 
-            Intent intent = new Intent(LoginActivity.this, ChatListActivity.class);
-            startActivity(intent);
-            finish();
+        loginViewModel.getLoginResult().observe(this, success -> {
+            if (success) {
+                Intent intent = new Intent(LoginActivity.this, ChatListActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(LoginActivity.this, "Login failed", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Set back button click listener

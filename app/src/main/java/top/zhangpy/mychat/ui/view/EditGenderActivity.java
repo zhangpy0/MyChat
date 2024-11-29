@@ -50,6 +50,12 @@ public class EditGenderActivity extends AppCompatActivity {
             ivFemaleCheck.setVisibility("女".equals(gender) ? View.VISIBLE : View.GONE);
         });
 
+        viewModel.getSaveResult().observe(this, saveResult -> {
+            if (saveResult) {
+                finish();
+            }
+        });
+
         // 点击男
         llMale.setOnClickListener(v -> viewModel.setSelectedGender("男"));
 
@@ -66,7 +72,6 @@ public class EditGenderActivity extends AppCompatActivity {
             setResult(RESULT_OK, resultIntent);
             viewModel.updateGenderToLocalAndServer();
 //            fatherViewModel.updateUserInfoFromLocal();
-            finish();
         });
     }
 }

@@ -43,13 +43,19 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         if (message.getUnreadCount() > 0) {
             sb.append("[").append(message.getUnreadCount()).append("条] ");
         }
-        if (!message.getSenderName().equals(message.getContactName())) {
+        if (!message.getSenderName().equals(message.getContactName()) && !message.getContent().isEmpty()) {
             sb.append(message.getSenderName()).append(":");
         }
         sb.append(message.getContent());
         holder.content.setText(sb.toString());
         holder.time.setText(message.getTime());
 
+        if (message.getAvatarPath() == null || message.getAvatarPath().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(R.drawable.default_avatar)
+                    .into(holder.avatar);
+            return;
+        }
         Glide.with(holder.itemView.getContext())
                 .load(message.getAvatarPath())
                 .placeholder(R.drawable.default_avatar) // 占位符
