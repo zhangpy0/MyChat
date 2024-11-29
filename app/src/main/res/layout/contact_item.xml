@@ -1,0 +1,71 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true" >
+
+    <TextView
+        android:id="@+id/catalog"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="#E0E0E0"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        android:textColor="#454545"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:id="@+id/contact_item"
+        android:drawSelectorOnTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:clickable="true"
+        android:focusable="true"
+
+        >
+
+    <!-- 头像 -->
+        <ImageView
+            android:id="@+id/contact_img"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/newfriend"
+            android:padding="10dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- 文本区域 -->
+        <TextView
+            android:id="@+id/contact_name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:textColor="#336598"
+            android:textSize="16sp" />
+
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#90909090" />
+
+    <TextView
+        android:id="@+id/contact_count"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="#FFFFFF"
+        android:paddingLeft="150dp"
+        android:paddingTop="5dp"
+        android:textColor="#454545"
+        android:textSize="13sp" />
+
+
+</LinearLayout>

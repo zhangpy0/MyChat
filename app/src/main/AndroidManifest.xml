@@ -62,8 +62,23 @@
         <activity
             android:name=".ui.view.EditTextActivity"
             android:exported="true" />
-        <activity android:name=".ui.view.SettingsActivity"
-            android:exported="true"></activity>
+        <activity
+            android:name=".ui.view.SettingsActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.view.AddFriendActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.view.GroupChatActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.view.TagActivity"
+            android:exported="true" />
+        <activity android:name=".ui.view.PublicAccountActivity"
+            android:exported="true" />
+        <activity android:name=".ui.view.ContactInfoActivity"
+            android:exported="true" />
+
 
 
         <service

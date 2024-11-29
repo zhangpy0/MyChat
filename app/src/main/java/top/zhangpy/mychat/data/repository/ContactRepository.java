@@ -30,6 +30,7 @@ import top.zhangpy.mychat.data.remote.model.GroupInfoModel;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
+import top.zhangpy.mychat.ui.model.ContactListItem;
 
 public class ContactRepository {
 
@@ -333,5 +334,29 @@ public class ContactRepository {
         requestMapModel.setUserId(String.valueOf(userId));
         updateContactOfFriend(token, requestMapModel);
         updateContactOfGroup(token, requestMapModel);
+    }
+
+    public List<ContactListItem> getFriendListFromServer(String token, Integer userId) throws IOException {
+        updateFriendAndGroupFromServer(token, userId);
+        List<Friend> friends = getFriendsByUserId(userId);
+        List<ContactListItem> contactListItems = new ArrayList<>();
+        for (Friend friend : friends) {
+            UserProfile userProfile = database.userProfileDao().getUserProfileById(friend.getFriendId());
+            contactListItems.add(new ContactListItem(friend.getFriendId(), userProfile.getNickname(), userProfile.getAvatarPath(), "user"));
+        }
+        contactListItems.sort(ContactListItem::compareTo);
+        return contactListItems;
+    }
+
+    public List<ContactListItem> getGroupListFromServer(String token, Integer userId) throws IOException {
+        updateFriendAndGroupFromServer(token, userId);
+        List<Group> groups = database.groupDao().getAllGroupsSortedByMessageTime();
+        List<ContactListItem> contactListItems = new ArrayList<>();
+        for (Group group : groups) {
+            GroupInfo groupInfo = database.groupDao().getGroupInfoById(group.getGroupId());
+            contactListItems.add(new ContactListItem(group.getGroupId(), groupInfo.getGroupName(), groupInfo.getAvatarPath(), "group"));
+        }
+        contactListItems.sort(ContactListItem::compareTo);
+        return contactListItems;
     }
 }
