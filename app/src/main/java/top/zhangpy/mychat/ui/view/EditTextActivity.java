@@ -76,11 +76,12 @@ public class EditTextActivity extends AppCompatActivity {
         // 保存按钮点击事件
         btnSave.setOnClickListener(v -> {
             String updatedText = etInput.getText().toString().trim();
+            viewModel.setText(updatedText);
             if (updatedText.isEmpty()) {
                 Toast.makeText(this, "内容不能为空", Toast.LENGTH_SHORT).show();
             } else {
                 viewModel.updateToLocalAndServer(key);
-//                fatherViewModel.updateUserInfoFromLocal();
+//                fatherViewModel.updateUserInfoFromLocalAndServer();
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("result_key", key);
                 if (key == 1) {

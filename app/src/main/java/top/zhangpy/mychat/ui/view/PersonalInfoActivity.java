@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.databinding.ActivityPersonalInfoBinding;
@@ -33,7 +34,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 this,
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())
         ).get(PersonalInfoViewModel.class);
-        viewModel.updateUserInfoFromLocal();
+        viewModel.updateUserInfoFromLocalAndServer();
 
         // 设置监听器和数据绑定
         setupObservers();
@@ -50,22 +51,33 @@ public class PersonalInfoActivity extends AppCompatActivity {
             }
         });
 
-        viewModel.updateUserInfoFromLocal();
+        viewModel.updateUserInfoFromLocalAndServer();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.updateUserInfoFromLocalAndServer();
     }
 
     private void setupObservers() {
         // 头像
         viewModel.getAvatar().observe(this, avatar -> {
 
-            Toast.makeText(this, "头像加载: " + avatar, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "头像加载: " + avatar, Toast.LENGTH_SHORT).show();
             if (avatar == null || avatar.isEmpty()) {
                 Glide.with(this)
                         .load(R.drawable.default_avatar)
                         .into(binding.ivAvatar);
                 return;
             }
+
+            // glide 需要禁用内存缓存，否则会加载虚空图片
+
             Glide.with(this)
                     .load(avatar)
+                    .skipMemoryCache(true) // 跳过内存缓存
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
                     .placeholder(R.drawable.default_avatar) // 占位符
                     .error(R.drawable.default_avatar) // 加载失败时的图片
                     .into(binding.ivAvatar);
@@ -113,19 +125,19 @@ public class PersonalInfoActivity extends AppCompatActivity {
                         viewModel.updateRegion(newText);
                     }
                 }
-//                viewModel.updateUserInfoFromLocal();
+//                viewModel.updateUserInfoFromLocalAndServer();
             }
         });
         // 点击头像
         binding.llAvatar.setOnClickListener(v -> {
-            Toast.makeText(this, "修改头像", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "修改头像", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, EditAvatarActivity.class);
             launcher.launch(intent);
         });
 
         // 点击昵称
         binding.llNickname.setOnClickListener(v -> {
-            Toast.makeText(this, "修改昵称", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "修改昵称", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, EditTextActivity.class);
             intent.putExtra(EditTextActivity.EXTRA_TITLE, "更改昵称");
             launcher.launch(intent);
@@ -140,14 +152,14 @@ public class PersonalInfoActivity extends AppCompatActivity {
 
         // 点击性别
         binding.llGender.setOnClickListener(v -> {
-            Toast.makeText(this, "修改性别", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "修改性别", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, EditGenderActivity.class);
             launcher.launch(intent);
         });
 
         // 点击地区
         binding.llRegion.setOnClickListener(v -> {
-            Toast.makeText(this, "修改地区", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "修改地区", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(this, EditTextActivity.class);
             intent.putExtra(EditTextActivity.EXTRA_TITLE, "更改地区");
             launcher.launch(intent);

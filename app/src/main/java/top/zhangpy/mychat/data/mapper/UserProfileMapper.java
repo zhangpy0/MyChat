@@ -16,7 +16,7 @@ public class UserProfileMapper {
         userProfile.setRegion(userProfileModel.getRegion());
         userProfile.setGender(userProfileModel.getGender());
         userProfile.setNickname(userProfileModel.getNickname());
-        String avatarName = "user_avatar_" + userProfileModel.getUserId() + ".jpg";
+        String avatarName = userProfileModel.getUserId() + "_avatar.jpg";
         InputStream avatar = StorageHelper.base64ToInputStream(userProfileModel.getAvatar());
         String path = StorageHelper.saveFile(context, "user", String.valueOf(userProfileModel.getUserId()), null, avatarName,avatar);
         userProfile.setAvatarPath(path);

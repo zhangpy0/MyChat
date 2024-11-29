@@ -5,13 +5,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.databinding.FragmentSelfBinding;
@@ -45,20 +45,20 @@ public class SelfFragment extends Fragment {
 
         // 设置点击事件
         binding.llPersonalInfo.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "个人信息点击", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(requireContext(), "个人信息点击", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(getContext(), PersonalInfoActivity.class);
             startActivity(intent);
 
         });
 
         binding.llSettings.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "设置点击", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(requireContext(), "设置点击", Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(getContext(), SettingsActivity.class);
             startActivity(intent);
         });
 
-        selfViewModel.updateSelfInfoFromLocal();
+        selfViewModel.updateSelfInfoFromLocalAndServer();
     }
 
     private void bindViewModel() {
@@ -79,6 +79,8 @@ public class SelfFragment extends Fragment {
             }
             Glide.with(this)
                     .load(avatar)
+                    .skipMemoryCache(true) // 跳过内存缓存
+                    .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
                     .placeholder(R.drawable.default_avatar) // 占位符
                     .error(R.drawable.default_avatar) // 加载失败时的图片
                     .into(binding.ivAvatar);
@@ -89,5 +91,11 @@ public class SelfFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null; // 释放 ViewBinding
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        selfViewModel.updateSelfInfoFromLocalAndServer();
     }
 }

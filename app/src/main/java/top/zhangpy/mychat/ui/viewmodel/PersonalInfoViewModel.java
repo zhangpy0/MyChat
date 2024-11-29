@@ -11,12 +11,16 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
+import top.zhangpy.mychat.data.mapper.UserProfileMapper;
+import top.zhangpy.mychat.data.remote.model.RequestMapModel;
+import top.zhangpy.mychat.data.remote.model.UserProfileModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.util.StorageHelper;
 
@@ -26,6 +30,14 @@ public class PersonalInfoViewModel extends AndroidViewModel {
 
     @Getter
     private final MutableLiveData<Boolean> updateResult = new MutableLiveData<>(false);
+
+    /*
+    TODO
+    1. 性别修改：数据库local,server成功；UI失败 -> 全部成功
+    2. 地区，昵称修改：数据库local,server失败；UI成功
+    3. 头像修改：数据库local,server成功；UIself成功，UIpersonal需重新打开 -> 全部成功
+    4. 头像文件生成过多 -> 已解决
+     */
 
     private final MutableLiveData<String> avatarPath = new MutableLiveData<>(""); // 头像 URL 或路径
     private final MutableLiveData<String> nickname = new MutableLiveData<>("未设置");
@@ -89,19 +101,48 @@ public class PersonalInfoViewModel extends AndroidViewModel {
 
     }
 
-    public void updateUserInfoFromLocal() {
+    // Server -> sqlite -> UI
+    public void updateUserInfoFromLocalAndServer() {
         Integer userId = loadUserId();
         if (userId == -1) {
             return;
         }
         Executors.newSingleThreadExecutor().execute(() -> {
-            UserProfile userProfile = userRepository.getUserProfileById(userId);
-            if (userProfile != null) {
-                updateAvatar(userProfile.getAvatarPath());
-                updateNickname(userProfile.getNickname());
-                updateGender(userProfile.getGender());
-                updateRegion(userProfile.getRegion());
-                updateAccount(String.valueOf(userId));
+            try {
+                String token = loadToken();
+                if (token == null) {
+                    return;
+                }
+                RequestMapModel requestMapModel = new RequestMapModel();
+                requestMapModel.setUserId(String.valueOf(userId));
+                requestMapModel.setFriendId(String.valueOf(userId));
+                UserProfileModel userProfileModel = userRepository.getUserProfile(token, requestMapModel);
+                UserProfile oldUserProfile = userRepository.getUserProfileById(userId);
+                File oldAvatarFileDir = new File(oldUserProfile.getAvatarPath()).getParentFile();
+                if (oldAvatarFileDir.exists()) {
+                    File[] oldAvatarFiles = oldAvatarFileDir.listFiles();
+                    if (oldAvatarFiles != null) {
+                        for (File oldAvatarFile : oldAvatarFiles) {
+                            if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
+                                Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                            }
+                        }
+                    }
+                }
+                UserProfile userProfileServer = UserProfileMapper.mapToUserProfile(userProfileModel, getApplication().getApplicationContext());
+                userRepository.updateUserProfile(userProfileServer);
+                UserProfile userProfile = userRepository.getUserProfileById(userId);
+                if (userProfile != null) {
+                    updateAvatar(userProfile.getAvatarPath());
+                    updateNickname(userProfile.getNickname());
+                    updateGender(userProfile.getGender());
+                    updateRegion(userProfile.getRegion());
+                    updateAccount(String.valueOf(userId));
+                } else {
+                    Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: user profile not match");
+                }
+            } catch (IOException e) {
+                Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
             }
         });
     }
@@ -138,7 +179,9 @@ public class PersonalInfoViewModel extends AndroidViewModel {
             try {
                 UserProfile userProfile = userRepository.getUserProfileById(userId);
                 File newAvatarDir = StorageHelper.getUserAvatarDirectory(getApplication().getApplicationContext(), String.valueOf(userId));
-                File newAvatar = new File(newAvatarDir, userId + "_avatar.jpg");
+                // 取个6位随机数，防止文件名重复
+                String random = String.valueOf(System.currentTimeMillis()).substring(7);
+                File newAvatar = new File(newAvatarDir, userId + "_avatar_" + random + ".jpg");
                 if (newAvatar.exists() && !newAvatar.delete()) {
                     Log.e("PersonalInfoViewModel", "updateUserAvatar: delete old avatar failed");
                     return;

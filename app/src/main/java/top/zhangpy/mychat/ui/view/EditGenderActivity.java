@@ -71,7 +71,7 @@ public class EditGenderActivity extends AppCompatActivity {
             resultIntent.putExtra(RESULT_GENDER, viewModel.getSelectedGender().getValue());
             setResult(RESULT_OK, resultIntent);
             viewModel.updateGenderToLocalAndServer();
-//            fatherViewModel.updateUserInfoFromLocal();
+//            fatherViewModel.updateUserInfoFromLocalAndServer();
         });
     }
 }

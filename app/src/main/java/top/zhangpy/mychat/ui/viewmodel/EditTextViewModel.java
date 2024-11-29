@@ -41,7 +41,7 @@ public class EditTextViewModel extends AndroidViewModel {
     }
 
     public void setText(String value) {
-        text.postValue(value);
+        text.setValue(value);
     }
 
     private Integer loadUserId() {

@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,8 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         }
         Glide.with(holder.itemView.getContext())
                 .load(message.getAvatarPath())
+                .skipMemoryCache(true) // 跳过内存缓存
+                .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
                 .placeholder(R.drawable.default_avatar) // 占位符
                 .error(R.drawable.default_avatar) // 加载失败时的图片
                 .into(holder.avatar);
