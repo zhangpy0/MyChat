@@ -66,34 +66,51 @@ public class ChatActivity extends AppCompatActivity {
 
         // ViewModel初始化
         viewModel = new ViewModelProvider(this).get(ChatViewModel.class);
-        String myAvatarPath = viewModel.getMyAvatar();
-        String otherAvatarPath = viewModel.getFriendAvatar(contactId);
+//        String myAvatarPath = viewModel.getMyAvatar();
+//        String otherAvatarPath = viewModel.getFriendAvatar(contactId);
 
-        viewModel.getIsAvatarUpdated().observe(this, updated -> {
-            if (updated >= 2) {
-                adapter = new MessageAdapter(
-                        this,
-                        new ArrayList<>(), // 初始数据为空
-                        myAvatarPath,
-                        otherAvatarPath
-                );
-            }
-        });
+        // 加载头像
+        viewModel.loadMyAvatar();
+        viewModel.loadFriendAvatar(contactId);
 
         viewModel.getFriendName().observe(this, friendName -> {
             contactName.setText(friendName);
         });
 
-        // 初始化RecyclerView
-        adapter = new MessageAdapter(
-                this,
-                new ArrayList<>(), // 初始数据为空
-                "",
-                ""
-        );
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        // 初始化RecyclerView
+//        adapter = new MessageAdapter(
+//                this,
+//                new ArrayList<>(), // 初始数据为空
+//                myAvatarPath,
+//                otherAvatarPath
+//        );
+//        recyclerView.setAdapter(adapter);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+// 监听头像加载完成
 
+        viewModel.getMyAvatarPath().observe(this, myAvatar -> {
+            String friendAvatar = viewModel.getFriendAvatarPath().getValue();
+            if (myAvatar != null && friendAvatar != null) {
+                initializeAdapter(myAvatar, friendAvatar);
+                setBind(contactId);
+                // 加载历史消息
+                viewModel.updateMessagesFromLocal(contactId);
+            }
+        });
+
+        viewModel.getFriendAvatarPath().observe(this, friendAvatar -> {
+            String myAvatar = viewModel.getMyAvatarPath().getValue();
+            if (myAvatar != null && friendAvatar != null) {
+                initializeAdapter(myAvatar, friendAvatar);
+                // 加载历史消息
+                setBind(contactId);
+                viewModel.updateMessagesFromLocal(contactId);
+            }
+        });
+
+    }
+
+    private void setBind(Integer contactId) {
         // 监听ViewModel中的数据变化
         viewModel.getMessages().observe(this, messages -> {
             adapter.getMessages().clear();
@@ -148,9 +165,17 @@ public class ChatActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> {
             finish();
         });
+    }
 
-        // 加载历史消息
-        viewModel.updateMessagesFromLocal(contactId);
+    private void initializeAdapter(String myAvatar, String friendAvatar) {
+        adapter = new MessageAdapter(
+                this,
+                new ArrayList<>(),
+                myAvatar,
+                friendAvatar
+        );
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
 

@@ -38,12 +38,46 @@ public class ChatViewModel extends AndroidViewModel {
     @Getter
     private MutableLiveData<String> friendName = new MutableLiveData<>("联系人");
 
+    @Getter
+    private MutableLiveData<String> myAvatarPath = new MutableLiveData<>();
+    @Getter
+    private MutableLiveData<String> friendAvatarPath = new MutableLiveData<>();
+
+
     public ChatViewModel(@NonNull Application application) {
         super(application);
         this.chatRepository = new ChatRepository(application);
         this.contactRepository = new ContactRepository(application);
         this.userRepository = new UserRepository(application);
     }
+
+    public void loadMyAvatar() {
+        Integer userId = loadUserId();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                String path = userRepository.getUserProfileById(userId).getAvatarPath();
+                myAvatarPath.postValue(path); // 设置 LiveData
+            } catch (Exception e) {
+                Log.e("ChatViewModel", "Failed to load my avatar", e);
+            }
+        });
+    }
+
+    public void loadFriendAvatar(Integer friendId) {
+        Integer userId = loadUserId();
+        String token = loadToken();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                userRepository.updateUserInfoFromServer(token, userId, friendId, getApplication());
+                UserProfile friendProfile = userRepository.getUserProfileById(friendId);
+                friendAvatarPath.postValue(friendProfile.getAvatarPath()); // 设置 LiveData
+                friendName.postValue(friendProfile.getNickname());
+            } catch (IOException e) {
+                Log.e("ChatViewModel", "Failed to load friend avatar", e);
+            }
+        });
+    }
+
 
     public String getFriendAvatar(Integer friendId) {
         Integer userId = loadUserId();
