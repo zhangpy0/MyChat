@@ -49,16 +49,40 @@ public class SideBar extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int index = (int) (event.getY() / (getHeight() / letters.length));
-        if (index >= 0 && index < letters.length) {
-            currentIndex = index;
-            if (callback != null) {
-                callback.onSelect(letters[index]);
+        // 判断触摸事件是否在 SideBar 区域
+        int action = event.getAction();
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
+            float y = event.getY();
+            int index = (int) (y / ((float) getHeight() / letters.length));
+            if (index >= 0 && index < letters.length) {
+                currentIndex = index;
+                if (callback != null) {
+                    callback.onSelect(letters[index]);
+                }
             }
         }
+
+        // 如果手指抬起，清除选中状态
+        if (action == MotionEvent.ACTION_UP) {
+            currentIndex = -1;
+        }
+
         invalidate();
-        return true;
+        return true; // 保留现有行为：SideBar 消耗它关心的事件
     }
+
+//    @Override
+//    public boolean onInterceptTouchEvent(MotionEvent event) {
+//        // 只拦截 SideBar 自己关心的触摸事件
+//        return isTouchInside(event) || super.onInterceptTouchEvent(event);
+//    }
+
+    private boolean isTouchInside(MotionEvent event) {
+        float x = event.getX();
+        float y = event.getY();
+        return x >= (getWidth() - 100) && y >= 0 && y <= getHeight(); // 根据绘制区域调整边界
+    }
+
 
     public void setLetters(String[] letters) {
         this.letters = letters;

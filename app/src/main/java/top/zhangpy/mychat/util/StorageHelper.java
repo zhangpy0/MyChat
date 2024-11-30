@@ -160,7 +160,18 @@ public class StorageHelper {
     }
 
     public static String inputStreamToBase64(String avatarPath) {
-        return Base64.getEncoder().encodeToString(avatarPath.getBytes());
+        File file = new File(avatarPath);
+        if (!file.exists()) {
+            return "";
+        }
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] bytes = new byte[(int) file.length()];
+            fis.read(bytes);
+            return Base64.getEncoder().encodeToString(bytes);
+        } catch (IOException e) {
+            Log.e("StorageHelper", "Failed to read file", e);
+            return "";
+        }
     }
 
     public static void copyFile(File cachedAvatar, File newAvatar) {

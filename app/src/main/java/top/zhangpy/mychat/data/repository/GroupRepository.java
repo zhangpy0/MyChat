@@ -15,11 +15,13 @@ import top.zhangpy.mychat.data.exception.NetException;
 import top.zhangpy.mychat.data.local.database.AppDatabase;
 import top.zhangpy.mychat.data.local.entity.Group;
 import top.zhangpy.mychat.data.local.entity.GroupInfo;
+import top.zhangpy.mychat.data.mapper.GroupMapper;
 import top.zhangpy.mychat.data.remote.RetrofitClient;
 import top.zhangpy.mychat.data.remote.api.GroupService;
 import top.zhangpy.mychat.data.remote.model.GroupInfoModel;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
+import top.zhangpy.mychat.util.StorageHelper;
 
 public class GroupRepository {
 
@@ -98,5 +100,34 @@ public class GroupRepository {
     public boolean createGroup(String token, @NonNull RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = groupService.createGroup(token, requestMapModel.toMap()).execute().body();
         return NetException.responseCheck(resultModel, 0);
+    }
+
+    public void updateGroupInfoFromServer(String token, Integer userId, Integer groupId, Context context) throws IOException {
+        RequestMapModel requestMapModel = new RequestMapModel();
+        requestMapModel.setUserId(String.valueOf(userId));
+        requestMapModel.setGroupId(String.valueOf(groupId));
+        GroupInfoModel groupInfoModel = getGroupInfo(token, requestMapModel);
+        GroupInfo oldGroupInfo = getGroupInfoById(groupId);
+        if (oldGroupInfo == null) {
+            GroupInfo newGroupInfo = GroupMapper.mapToGroupInfo(groupInfoModel, context);
+            insertGroupInfo(newGroupInfo);
+            return;
+        }
+        String oldAvatarBase64;
+        if (oldGroupInfo.getAvatarPath() == null || oldGroupInfo.getAvatarPath().isEmpty()) {
+            oldAvatarBase64 = "";
+        } else {
+            oldAvatarBase64 = StorageHelper.inputStreamToBase64(oldGroupInfo.getAvatarPath());
+        }
+        if (!oldAvatarBase64.equals(groupInfoModel.getAvatar())) {
+            GroupInfo newGroupInfo = GroupMapper.mapToGroupInfo(groupInfoModel, context);
+            updateGroupInfo(newGroupInfo);
+        } else {
+            GroupInfo newGroupInfo = new GroupInfo();
+            newGroupInfo.setGroupId(groupId);
+            newGroupInfo.setGroupName(groupInfoModel.getGroupName());
+            newGroupInfo.setAnnouncement(groupInfoModel.getAnnouncement());
+            updateGroupInfo(newGroupInfo);
+        }
     }
 }

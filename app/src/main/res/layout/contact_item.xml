@@ -2,15 +2,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:orientation="vertical"
-    android:clickable="true"
-    android:focusable="true" >
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/catalog"
         android:layout_width="match_parent"
         android:layout_height="32dp"
-        android:background="#E0E0E0"
+        android:background="#90909090"
         android:paddingLeft="10dp"
         android:paddingTop="5dp"
         android:textColor="#454545"
@@ -34,9 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/newfriend"
-            android:padding="10dp"
-            android:clickable="true"
-            android:focusable="true" />
+            android:padding="10dp" />
 
         <!-- 文本区域 -->
         <TextView
@@ -54,7 +50,7 @@
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
+        android:layout_height="1dp"
         android:background="#90909090" />
 
     <TextView

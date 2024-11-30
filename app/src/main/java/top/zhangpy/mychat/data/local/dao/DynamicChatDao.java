@@ -33,10 +33,11 @@ public class DynamicChatDao {
         database.insert(tableName, null, values);
     }
 
+    // 升序
     // 查询消息
     public List<ChatMessage> getMessages(String tableName) {
         List<ChatMessage> messages = new ArrayList<>();
-        Cursor cursor = database.query(tableName, null, null, null, null, null, "send_time DESC");
+        Cursor cursor = database.query(tableName, null, null, null, null, null, "send_time ASC");
         int groupId = 0;
         int receiverId = 0;
         String receiverType;
@@ -177,5 +178,11 @@ public class DynamicChatDao {
         int count = cursor.getCount();
         cursor.close();
         return count;
+    }
+
+    public void updateAllMessageRead(String tableName) {
+        ContentValues values = new ContentValues();
+        values.put("is_read", 1);
+        database.update(tableName, values, "is_read = 0", null);
     }
 }

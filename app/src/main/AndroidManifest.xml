@@ -78,6 +78,10 @@
             android:exported="true" />
         <activity android:name=".ui.view.ContactInfoActivity"
             android:exported="true" />
+        <activity android:name=".ui.view.ChatActivity"
+            android:exported="true" />
+        <activity android:name=".ui.view.ImagePreviewActivity"
+            android:exported="true" />
 
 
 

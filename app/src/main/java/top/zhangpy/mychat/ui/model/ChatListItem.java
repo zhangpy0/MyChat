@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class ChatListItem {
 
+    private int id;
     private String contactName;
     private String senderName;
     private String content;
@@ -37,7 +38,7 @@ public class ChatListItem {
 
         if (diff < oneDay) {
             this.time = new java.text.SimpleDateFormat("HH:mm").format(sendTime);
-        } else if (diff < 2 * oneDay) {
+        } else if (diff < 1 * oneDay) {
             this.time = "昨天";
         } else if (diff < oneYear) {
             this.time = new java.text.SimpleDateFormat("MM-dd").format(sendTime);

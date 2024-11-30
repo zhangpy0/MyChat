@@ -30,7 +30,9 @@ import top.zhangpy.mychat.data.remote.model.GroupInfoModel;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
+import top.zhangpy.mychat.ui.model.ApplyListItem;
 import top.zhangpy.mychat.ui.model.ContactListItem;
+import top.zhangpy.mychat.util.Converter;
 
 public class ContactRepository {
 
@@ -40,14 +42,22 @@ public class ContactRepository {
 
     private final ContactService contactService = RetrofitClient.contactService;
 
+    private UserRepository userRepository;
+
+    private GroupRepository groupRepository;
+
     public ContactRepository() {
         this.context = null;
         this.database = null;
+        this.userRepository = new UserRepository();
+        this.groupRepository = new GroupRepository();
     }
 
     public ContactRepository(Context context) {
         this.context = context;
         this.database = AppDatabase.getInstance(context, false);
+        this.userRepository = new UserRepository(context);
+        this.groupRepository = new GroupRepository(context);
     }
 
     public void insertContactApply(ContactApply contactApply) {
@@ -358,5 +368,96 @@ public class ContactRepository {
         }
         contactListItems.sort(ContactListItem::compareTo);
         return contactListItems;
+    }
+
+    public List<ApplyListItem> getApplyListFromServer(String token, Integer userId, Context context) throws IOException {
+        RequestMapModel requestMapModel = new RequestMapModel();
+        requestMapModel.setUserId(String.valueOf(userId));
+        List<ContactApplyModel> contactApplyModelsFromMe = getContactApplyFromMe(token, requestMapModel);
+        List<ContactApplyModel> contactApplyModelsFromOthers = getContactApplyFromOthers(token, requestMapModel);
+        List<ContactApply> localContactApplies = getAllContactApplies();
+        Set<ContactApply> localContactApplySet = new HashSet<>(localContactApplies);
+        List<ApplyListItem> applyListItems = new ArrayList<>();
+        for (ContactApplyModel contactApplyModel : contactApplyModelsFromMe) {
+            ContactApply contactApply = ContactApplyMapper.mapToContactApply(contactApplyModel);
+            if (!localContactApplySet.contains(contactApply)) {
+                insertContactApply(contactApply);
+            }
+        }
+        for (ContactApplyModel contactApplyModel : contactApplyModelsFromOthers) {
+            ContactApply contactApply = ContactApplyMapper.mapToContactApply(contactApplyModel);
+            if (!localContactApplySet.contains(contactApply)) {
+                insertContactApply(contactApply);
+            }
+        }
+        List<ContactApply> contactApplies = getAllContactApplies();
+        for (ContactApply contactApply : contactApplies) {
+            Integer applicantId = contactApply.getApplicantId();
+            Integer receiverId = contactApply.getReceiverId();
+            Integer groupId = contactApply.getGroupId();
+            ApplyListItem applyListItem = new ApplyListItem();
+            if (receiverId.equals(userId)) {
+                if (contactApply.getContactType().equals("friend")) {
+                    userRepository.updateUserInfoFromServer(token, userId, applicantId, context);
+                    UserProfile userProfile = userRepository.getUserProfileById(applicantId);
+                    applyListItem.setId(contactApply.getApplyId());
+                    applyListItem.setAvatarPath(userProfile.getAvatarPath());
+                    applyListItem.setContactName(userProfile.getNickname());
+                    applyListItem.setSenderName(userProfile.getNickname());
+                    applyListItem.setType("friend");
+                    applyListItem.setContent(contactApply.getMessage());
+                    applyListItem.setStatus(contactApply.getStatus());
+                    applyListItem.setAbsTime(Converter.dateToTimestamp(contactApply.getApplyTime()));
+                    applyListItem.setFlag(2);
+                    applyListItems.add(applyListItem);
+                } else {
+                    groupRepository.updateGroupInfoFromServer(token, userId, groupId, context);
+                    userRepository.updateUserInfoFromServer(token, userId, applicantId, context);
+                    GroupInfo groupInfo = groupRepository.getGroupInfoById(groupId);
+                    UserProfile userProfile = userRepository.getUserProfileById(applicantId);
+                    applyListItem.setId(contactApply.getApplyId());
+                    applyListItem.setAvatarPath(groupInfo.getAvatarPath());
+                    applyListItem.setContactName(groupInfo.getGroupName());
+                    applyListItem.setSenderName(userProfile.getNickname());
+                    applyListItem.setType("group");
+                    applyListItem.setContent(contactApply.getMessage());
+                    applyListItem.setStatus(contactApply.getStatus());
+                    applyListItem.setAbsTime(Converter.dateToTimestamp(contactApply.getApplyTime()));
+                    applyListItem.setFlag(2);
+                    applyListItems.add(applyListItem);
+                }
+            } else if (applicantId.equals(userId)) {
+                if (contactApply.getContactType().equals("friend")) {
+                    userRepository.updateUserInfoFromServer(token, userId, receiverId, context);
+                    UserProfile userProfile = userRepository.getUserProfileById(receiverId);
+                    applyListItem.setId(contactApply.getApplyId());
+                    applyListItem.setAvatarPath(userProfile.getAvatarPath());
+                    applyListItem.setContactName(userProfile.getNickname());
+                    applyListItem.setSenderName(userProfile.getNickname());
+                    applyListItem.setType("friend");
+                    applyListItem.setContent(contactApply.getMessage());
+                    applyListItem.setStatus(contactApply.getStatus());
+                    applyListItem.setAbsTime(Converter.dateToTimestamp(contactApply.getApplyTime()));
+                    applyListItem.setFlag(1);
+                    applyListItems.add(applyListItem);
+                } else {
+                    groupRepository.updateGroupInfoFromServer(token, userId, groupId, context);
+                    userRepository.updateUserInfoFromServer(token, userId, receiverId, context);
+                    GroupInfo groupInfo = groupRepository.getGroupInfoById(groupId);
+                    UserProfile userProfile = userRepository.getUserProfileById(receiverId);
+                    applyListItem.setId(contactApply.getApplyId());
+                    applyListItem.setAvatarPath(groupInfo.getAvatarPath());
+                    applyListItem.setContactName(groupInfo.getGroupName());
+                    applyListItem.setSenderName(userProfile.getNickname());
+                    applyListItem.setType("group");
+                    applyListItem.setContent(contactApply.getMessage());
+                    applyListItem.setStatus(contactApply.getStatus());
+                    applyListItem.setAbsTime(Converter.dateToTimestamp(contactApply.getApplyTime()));
+                    applyListItem.setFlag(1);
+                    applyListItems.add(applyListItem);
+                }
+            }
+        }
+        return applyListItems;
     }
 }

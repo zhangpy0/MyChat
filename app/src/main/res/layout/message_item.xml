@@ -1,0 +1,100 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- 对方的消息 -->
+    <LinearLayout
+        android:id="@+id/other_message_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <!-- 对方头像 -->
+        <ImageView
+            android:id="@+id/iv_other_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_avatar"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="8dp" />
+
+        <!-- 对方的消息内容 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_base_t"
+            android:padding="8dp"
+            android:orientation="vertical">
+
+            <!-- 文字消息 -->
+            <TextView
+                android:id="@+id/tv_other_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:text="对方的消息"/>
+
+            <!-- 图片消息 -->
+            <ImageView
+                android:id="@+id/iv_other_image"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 自己的消息 -->
+    <RelativeLayout
+        android:id="@+id/my_message_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone">
+
+        <!-- 自己头像 -->
+        <ImageView
+            android:id="@+id/iv_my_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_avatar"
+            android:scaleType="centerCrop"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp" />
+
+        <!-- 自己的消息内容 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_base"
+            android:padding="8dp"
+            android:orientation="vertical"
+            android:layout_toStartOf="@id/iv_my_avatar"
+            android:layout_alignParentTop="true">
+
+            <!-- 文字消息 -->
+            <TextView
+                android:id="@+id/tv_my_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <!-- 图片消息 -->
+            <ImageView
+                android:id="@+id/iv_my_image"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:scaleType="centerInside" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

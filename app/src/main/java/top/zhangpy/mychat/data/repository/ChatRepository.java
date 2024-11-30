@@ -6,6 +6,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import top.zhangpy.mychat.data.remote.model.ChatMessageModel;
 import top.zhangpy.mychat.data.remote.model.DownloadModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.ui.model.ChatListItem;
+import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class ChatRepository {
@@ -118,6 +120,7 @@ public class ChatRepository {
     }
 
 
+    // no file: path set null
     public boolean sendMessage(String userId, String receiverId, String groupId, String receiverType, String content, String messageType, String token, String path) throws IOException {
         File file = null;
         MultipartBody.Part filePart = null;
@@ -255,6 +258,7 @@ public class ChatRepository {
             UserProfile friendProfile = userRepository.getUserProfileById(friend.getFriendId());
             if (message != null) {
                 ChatListItem chatListItem = new ChatListItem();
+                chatListItem.setId(friend.getFriendId());
                 chatListItem.setContactName(friendProfile.getNickname());
                 chatListItem.setSenderName(friendProfile.getNickname());
                 chatListItem.setContent(message.getContent());
@@ -266,6 +270,7 @@ public class ChatRepository {
                 chatListItemSet.add(chatListItem);
             } else {
                 ChatListItem chatListItem = new ChatListItem();
+                chatListItem.setId(friend.getFriendId());
                 chatListItem.setContactName(friendProfile.getNickname());
                 chatListItem.setSenderName(friendProfile.getNickname());
                 chatListItem.setContent("");
@@ -285,6 +290,7 @@ public class ChatRepository {
             if (message != null) {
                 senderProfile = userRepository.getUserProfileById(message.getSenderId());
                 ChatListItem chatListItem = new ChatListItem();
+                chatListItem.setId(group.getGroupId());
                 chatListItem.setContactName(groupInfo.getGroupName());
                 if (senderProfile == null) {
                     chatListItem.setSenderName("");
@@ -300,6 +306,7 @@ public class ChatRepository {
                 chatListItemSet.add(chatListItem);
             } else {
                 ChatListItem chatListItem = new ChatListItem();
+                chatListItem.setId(group.getGroupId());
                 chatListItem.setContactName(groupInfo.getGroupName());
                 chatListItem.setSenderName("");
                 chatListItem.setContent("");
@@ -315,5 +322,62 @@ public class ChatRepository {
         List<ChatListItem> chatListItems = new java.util.ArrayList<>(chatListItemSet);
         chatListItems.sort((o1, o2) -> (int) (o2.getAbsTime() - o1.getAbsTime()));
         return chatListItems;
+    }
+
+    public void updateAllMessageRead(Integer userId, Integer friendId) {
+        String tableName = getTableName(friendId, userId);
+        chatDao.updateAllMessageRead(tableName);
+    }
+
+    public void sendMessageToServer(Integer userId, Integer friendId, String content, String messageType, String token, String path) throws IOException {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setSenderId(userId);
+        chatMessage.setReceiverId(friendId);
+        chatMessage.setReceiverType("user");
+        chatMessage.setContent(content);
+        chatMessage.setMessageType(messageType);
+        chatMessage.setFilePath(path);
+        chatMessage.setSendTime(new java.sql.Timestamp(System.currentTimeMillis()));
+        chatMessage.setIsRead(true);
+        chatMessage.setIsDownload(true);
+        String tableName = getTableName(friendId, userId);
+        insertMessage(tableName, chatMessage);
+        sendMessage(userId.toString(), friendId.toString(), "0", "user", content, messageType, token, path);
+        Friend friend = contactRepository.getFriendByFriendId(friendId);
+        friend.setMessageTime(chatMessage.getSendTime());
+        contactRepository.updateFriend(friend);
+    }
+
+    // TODO
+    public void sendMessageToServer(Integer userId, Integer otherId, Integer groupId, String content, String messageType, String token, String path) throws IOException {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setSenderId(userId);
+        chatMessage.setGroupId(groupId);
+        chatMessage.setReceiverType("group");
+        chatMessage.setContent(content);
+        chatMessage.setMessageType(messageType);
+        chatMessage.setFilePath(path);
+        chatMessage.setSendTime(new java.sql.Timestamp(System.currentTimeMillis()));
+        chatMessage.setIsRead(true);
+        chatMessage.setIsDownload(true);
+        String tableName = getTableName(groupId);
+        insertMessage(tableName, chatMessage);
+        sendMessage(userId.toString(), "0", groupId.toString(), "group", content, messageType, token, path);
+    }
+
+    public List<MessageListItem> updateMessagesFromLocal(Integer userId, Integer friendId) {
+        String tableName = getTableName(friendId, userId);
+        List<ChatMessage> messages = getMessages(tableName);
+        List<MessageListItem> messageListItems = new ArrayList<>();
+        for (ChatMessage message : messages) {
+            MessageListItem messageListItem = new MessageListItem();
+            messageListItem.setId(message.getMessageId());
+            messageListItem.setContent(message.getContent());
+            messageListItem.setMessageType(message.getMessageType());
+            messageListItem.setFilePath(message.getFilePath());
+            messageListItem.setMe(message.getSenderId().equals(userId));
+            messageListItem.setSendTime(message.getSendTime());
+        }
+        return messageListItems;
     }
 }

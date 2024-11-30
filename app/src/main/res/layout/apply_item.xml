@@ -1,17 +1,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="140dp"
     android:padding="10dp"
-    android:orientation="horizontal"
-    android:clickable="true"
-    android:focusable="true"
-    >
+    android:orientation="horizontal">
 
     <!-- 头像 -->
     <ImageView
-        android:id="@+id/img1"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:id="@+id/contact_img"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:layout_marginEnd="10dp"
         android:layout_gravity="center_vertical"
         android:scaleType="centerCrop"
@@ -34,7 +31,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:textColor="#000000"
-            android:textSize="18sp"
+            android:textSize="24sp"
             android:text="联系人" />
 
         <!-- 内容 -->
@@ -50,7 +47,7 @@
             android:text="内容"/>
     </LinearLayout>
 
-    <!-- 时间和右侧图标 -->
+    <!-- 添加标签 -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -58,17 +55,34 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/time"
+            android:id="@+id/status_flag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#A8A8A8"
-            android:textSize="14sp"
-            android:text="20:00" />
+            android:textSize="18sp"
+            android:text="未添加"
+            android:visibility="gone"/>
 
-        <ImageView
-            android:id="@+id/code"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginTop="5dp" />
+        <!-- 接受按钮 -->
+        <Button
+            android:id="@+id/add_flag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_style_green"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:text="接受"
+            android:visibility="gone"/>
+
+        <!-- 拒绝按钮 -->
+        <Button
+            android:id="@+id/reject_flag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_style_white"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:text="拒绝"
+            android:visibility="gone"/>
     </LinearLayout>
 </LinearLayout>

@@ -1,6 +1,8 @@
 package top.zhangpy.mychat.ui.adapter;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import java.util.List;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.model.ChatListItem;
+import top.zhangpy.mychat.ui.view.ChatActivity;
 
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatViewHolder> {
 
@@ -50,6 +53,17 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         sb.append(message.getContent());
         holder.content.setText(sb.toString());
         holder.time.setText(message.getTime());
+
+        holder.itemView.setOnClickListener(v -> {
+            // TODO 跳转到聊天界面
+            Context context = holder.itemView.getContext();
+            Intent intent = new Intent(context, ChatActivity.class);
+            intent.putExtra("contact_id", message.getId());
+//            intent.putExtra("contact_type",)
+            context.startActivity(intent);
+            message.setUnreadCount(0);
+            notifyItemChanged(position);
+        });
 
         if (message.getAvatarPath() == null || message.getAvatarPath().isEmpty()) {
             Glide.with(holder.itemView.getContext())

@@ -14,6 +14,7 @@ import top.zhangpy.mychat.data.exception.NetException;
 import top.zhangpy.mychat.data.local.database.AppDatabase;
 import top.zhangpy.mychat.data.local.entity.User;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
+import top.zhangpy.mychat.data.mapper.UserProfileMapper;
 import top.zhangpy.mychat.data.remote.RetrofitClient;
 import top.zhangpy.mychat.data.remote.api.ContactService;
 import top.zhangpy.mychat.data.remote.api.UserAccountService;
@@ -24,6 +25,7 @@ import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.data.remote.model.UserAccountModel;
 import top.zhangpy.mychat.data.remote.model.UserAvatarModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
+import top.zhangpy.mychat.util.StorageHelper;
 
 public class UserRepository {
     private final AppDatabase database;
@@ -138,6 +140,36 @@ public class UserRepository {
         MultipartBody.Part body = MultipartBody.Part.createFormData("avatar", file.getName(), requestBody);
         ResultModel resultModel = userProfileService.updateUserAvatar(token, userId, body).execute().body();
         return NetException.responseCheck(resultModel, 0);
+    }
+
+    public void updateUserInfoFromServer(String token, Integer userId, Integer friendId, Context context) throws IOException {
+        RequestMapModel requestMapModel = new RequestMapModel();
+        requestMapModel.setUserId(String.valueOf(userId));
+        requestMapModel.setFriendId(String.valueOf(friendId));
+        UserProfileModel userProfileModel = getUserProfile(token, requestMapModel);
+        UserProfile oldUserProfile = getUserProfileById(Integer.valueOf(userProfileModel.getUserId()));
+        if (oldUserProfile == null) {
+            UserProfile newProfile = UserProfileMapper.mapToUserProfile(userProfileModel, context);
+            insertUserProfile(newProfile);
+            return;
+        }
+        String oldAvatarBase64;
+        if (oldUserProfile.getAvatarPath() == null || oldUserProfile.getAvatarPath().isEmpty()) {
+            oldAvatarBase64 = "";
+        } else {
+            oldAvatarBase64 = StorageHelper.inputStreamToBase64(oldUserProfile.getAvatarPath());
+        }
+        if (!oldAvatarBase64.equals(userProfileModel.getAvatar())) {
+            UserProfile newProfile = UserProfileMapper.mapToUserProfile(userProfileModel, context);
+            updateUserProfile(newProfile);
+        } else {
+            UserProfile newProfile = new UserProfile();
+            newProfile.setUserId(Integer.parseInt(userProfileModel.getUserId()));
+            newProfile.setNickname(userProfileModel.getNickname());
+            newProfile.setGender(userProfileModel.getGender());
+            newProfile.setRegion(userProfileModel.getRegion());
+            updateUserProfile(newProfile);
+        }
     }
 
     public boolean check(String token, RequestMapModel requestMapModel) throws IOException {

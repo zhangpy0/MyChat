@@ -28,7 +28,7 @@ import top.zhangpy.mychat.ui.view.GroupChatActivity;
 import top.zhangpy.mychat.ui.view.PublicAccountActivity;
 import top.zhangpy.mychat.ui.view.TagActivity;
 
-// TODO glide 加载资源图片失败
+// TODO glide 加载资源图片失败 -> 已解决
 public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.ContactViewHolder> {
 
     private List<ContactListItem> contacts = new ArrayList<>();
@@ -125,7 +125,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         }
 
         // 设置点击事件
-        holder.avatar.setOnClickListener(view -> {
+        holder.itemViewLayout.setOnClickListener(view -> {
             Context context = view.getContext();
             Intent intent;
             switch (contact.getId()) {
