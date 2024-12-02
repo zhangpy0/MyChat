@@ -88,25 +88,9 @@ public class ChatActivity extends AppCompatActivity {
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 // 监听头像加载完成
 
-        viewModel.getMyAvatarPath().observe(this, myAvatar -> {
-            String friendAvatar = viewModel.getFriendAvatarPath().getValue();
-            if (myAvatar != null && friendAvatar != null) {
-                initializeAdapter(myAvatar, friendAvatar);
-                setBind(contactId);
-                // 加载历史消息
-                viewModel.updateMessagesFromLocal(contactId);
-            }
-        });
+        viewModel.getMyAvatarPath().observe(this, myAvatar -> checkAndInitializeAdapter(contactId));
 
-        viewModel.getFriendAvatarPath().observe(this, friendAvatar -> {
-            String myAvatar = viewModel.getMyAvatarPath().getValue();
-            if (myAvatar != null && friendAvatar != null) {
-                initializeAdapter(myAvatar, friendAvatar);
-                // 加载历史消息
-                setBind(contactId);
-                viewModel.updateMessagesFromLocal(contactId);
-            }
-        });
+        viewModel.getFriendAvatarPath().observe(this, friendAvatar -> checkAndInitializeAdapter(contactId));
 
     }
 
@@ -178,5 +162,13 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-
+    private void checkAndInitializeAdapter(int contactId) {
+        String myAvatar = viewModel.getMyAvatarPath().getValue();
+        String friendAvatar = viewModel.getFriendAvatarPath().getValue();
+        if (myAvatar != null && friendAvatar != null && adapter == null) { // 确保只初始化一次
+            initializeAdapter(myAvatar, friendAvatar);
+            setBind(contactId);
+            viewModel.updateMessagesFromLocal(contactId); // 加载历史消息
+        }
+    }
 }
