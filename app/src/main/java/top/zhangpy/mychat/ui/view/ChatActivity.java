@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,6 +54,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         int contactId = getIntent().getIntExtra("contact_id", -1);
+        Log.d("ChatActivity", "contactId: " + contactId);
 
         // 初始化视图
         recyclerView = findViewById(R.id.rv_messages);
@@ -69,29 +71,32 @@ public class ChatActivity extends AppCompatActivity {
 //        String myAvatarPath = viewModel.getMyAvatar();
 //        String otherAvatarPath = viewModel.getFriendAvatar(contactId);
 
-        // 加载头像
-        viewModel.loadMyAvatar();
-        viewModel.loadFriendAvatar(contactId);
+
 
         viewModel.getFriendName().observe(this, friendName -> {
             contactName.setText(friendName);
         });
 
-//        // 初始化RecyclerView
-//        adapter = new MessageAdapter(
-//                this,
-//                new ArrayList<>(), // 初始数据为空
-//                myAvatarPath,
-//                otherAvatarPath
-//        );
-//        recyclerView.setAdapter(adapter);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-// 监听头像加载完成
+        // 初始化RecyclerView
+        adapter = new MessageAdapter(
+                this,
+                new ArrayList<>(), // 初始数据为空
+                null,
+                null
+        );
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        viewModel.updateMessagesFromLocal(contactId); // 加载历史消息
 
-        viewModel.getMyAvatarPath().observe(this, myAvatar -> checkAndInitializeAdapter(contactId));
+        setBind(contactId);
 
-        viewModel.getFriendAvatarPath().observe(this, friendAvatar -> checkAndInitializeAdapter(contactId));
+        viewModel.getMyAvatarPath().observe(this, myAvatar -> checkAndResetAdapter(contactId));
 
+        viewModel.getFriendAvatarPath().observe(this, friendAvatar -> checkAndResetAdapter(contactId));
+
+        // 加载头像
+        viewModel.loadMyAvatar();
+        viewModel.loadFriendAvatar(contactId);
     }
 
     private void setBind(Integer contactId) {
@@ -99,6 +104,7 @@ public class ChatActivity extends AppCompatActivity {
         viewModel.getMessages().observe(this, messages -> {
             adapter.getMessages().clear();
             adapter.getMessages().addAll(messages);
+            // TODO 优化
             adapter.notifyDataSetChanged();
             recyclerView.scrollToPosition(messages.size() - 1);
         });
@@ -151,23 +157,21 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void initializeAdapter(String myAvatar, String friendAvatar) {
-        adapter = new MessageAdapter(
-                this,
-                new ArrayList<>(),
-                myAvatar,
-                friendAvatar
-        );
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    private void resetAdapter(String myAvatar, String friendAvatar) {
+        adapter.setMyAvatarPath(myAvatar);
+        adapter.setOtherAvatarPath(friendAvatar);
+//        recyclerView.setAdapter(adapter);
+        // TODO 优化
+        adapter.notifyDataSetChanged();
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    private void checkAndInitializeAdapter(int contactId) {
+    private void checkAndResetAdapter(int contactId) {
+        Log.d("ChatActivity", "checkAndResetAdapter");
         String myAvatar = viewModel.getMyAvatarPath().getValue();
         String friendAvatar = viewModel.getFriendAvatarPath().getValue();
-        if (myAvatar != null && friendAvatar != null && adapter == null) { // 确保只初始化一次
-            initializeAdapter(myAvatar, friendAvatar);
-            setBind(contactId);
+        if (myAvatar != null && friendAvatar != null) { // 确保只初始化一次
+            resetAdapter(myAvatar, friendAvatar);
             viewModel.updateMessagesFromLocal(contactId); // 加载历史消息
         }
     }

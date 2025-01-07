@@ -18,6 +18,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.Setter;
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.model.MessageListItem;
 
@@ -28,13 +29,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Getter
     private final List<MessageListItem> messages;
 
+    @Setter
     private String myAvatarPath;
 
+    @Setter
     private String otherAvatarPath;
 
     public MessageAdapter(Context context, List<MessageListItem> messages, String myAvatarPath, String otherAvatarPath) {
         this.context = context;
         this.messages = messages;
+        if (myAvatarPath == null) {
+            myAvatarPath = "";
+        }
+        if (otherAvatarPath == null) {
+            otherAvatarPath = "";
+        }
         this.myAvatarPath = myAvatarPath;
         this.otherAvatarPath = otherAvatarPath;
     }

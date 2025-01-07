@@ -248,14 +248,20 @@ public class ChatRepository {
         }
     }
 
-    public List<ChatListItem> updateChatListFromLocal() {
+    public List<ChatListItem> updateChatListFromLocal(String token, Integer userId) throws IOException {
         List<Friend> friends = contactRepository.getAllFriendsSortedByMessageTime();
         List<Group> groups = groupRepository.getAllGroupsSortedByMessageTime();
         Set<ChatListItem> chatListItemSet = new HashSet<>();
+        boolean isUpdate = false;
         for (Friend friend : friends) {
             createChatTable(getTableName(friend.getFriendId(), friend.getUserId()));
             ChatMessage message = chatDao.getLastMessage(getTableName(friend.getFriendId(), friend.getUserId()));
             UserProfile friendProfile = userRepository.getUserProfileById(friend.getFriendId());
+            if (friendProfile == null && !isUpdate) {
+                contactRepository.updateFriendAndGroupFromServer(token, userId);
+                friendProfile = userRepository.getUserProfileById(friend.getFriendId());
+                isUpdate = true;
+            }
             if (message != null) {
                 ChatListItem chatListItem = new ChatListItem();
                 chatListItem.setId(friend.getFriendId());
@@ -377,6 +383,7 @@ public class ChatRepository {
             messageListItem.setFilePath(message.getFilePath());
             messageListItem.setMe(message.getSenderId().equals(userId));
             messageListItem.setSendTime(message.getSendTime());
+            messageListItems.add(messageListItem);
         }
         return messageListItems;
     }

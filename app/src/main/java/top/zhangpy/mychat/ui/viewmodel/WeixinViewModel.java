@@ -42,7 +42,12 @@ public class WeixinViewModel extends AndroidViewModel {
             } catch (IOException e) {
                 Log.e("WeixinViewModel", "updateMessages: ", e);
             }
-            List<ChatListItem> chatListItemList = chatRepository.updateChatListFromLocal();
+            List<ChatListItem> chatListItemList = null;
+            try {
+                chatListItemList = chatRepository.updateChatListFromLocal(token, userId);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             messages.postValue(chatListItemList);
         });
     }
