@@ -25,9 +25,9 @@
 
         <!-- 对方的消息内容 -->
         <LinearLayout
+            android:id="@+id/other_message_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/chat_base_t"
             android:padding="8dp"
             android:orientation="vertical">
 
@@ -38,15 +38,21 @@
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/black"
                 android:textSize="16sp"
+                android:background="@drawable/chat_base_t"
+                android:textIsSelectable="true"
                 android:text="对方的消息"/>
 
             <!-- 图片消息 -->
             <ImageView
                 android:id="@+id/iv_other_image"
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:scaleType="centerInside" />
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:maxWidth="200dp"
+                android:maxHeight="300dp" />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -71,9 +77,9 @@
 
         <!-- 自己的消息内容 -->
         <LinearLayout
+            android:id="@+id/my_message_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/chat_base"
             android:padding="8dp"
             android:orientation="vertical"
             android:layout_toStartOf="@id/iv_my_avatar"
@@ -85,15 +91,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/black"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textIsSelectable="true"
+                android:background="@drawable/chat_base" />
 
             <!-- 图片消息 -->
             <ImageView
                 android:id="@+id/iv_my_image"
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:scaleType="centerInside" />
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:maxWidth="200dp"
+                android:maxHeight="300dp" />
+
         </LinearLayout>
     </RelativeLayout>
 

@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import top.zhangpy.mychat.R;
@@ -20,6 +21,12 @@ public class ChatListActivity extends FragmentActivity {
 
     private ChatListViewModel viewModel;
 
+    private Fragment weixinFragment;
+    private Fragment contactListFragment;
+    private Fragment findFragment;
+    private Fragment selfFragment;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +39,10 @@ public class ChatListActivity extends FragmentActivity {
         findViewById(R.id.self_layout).setOnClickListener(v -> viewModel.setSelectedTab(3));
 
         setupObservers();
+
+        if (savedInstanceState == null) {
+            viewModel.setSelectedTab(0);
+        }
     }
 
     private void setupObservers() {
@@ -39,30 +50,56 @@ public class ChatListActivity extends FragmentActivity {
     }
 
     private void updateTabSelection(int index) {
-        Fragment fragment = null;
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        hideAllFragments(transaction);
+
+        Fragment fragmentToShow = null;
         switch (index) {
             case 0:
-                fragment = new WeixinFragment();
+                if (weixinFragment == null) {
+                    weixinFragment = new WeixinFragment();
+                    transaction.add(R.id.fragment, weixinFragment, "WEIXIN_FRAGMENT");
+                }
+                fragmentToShow = weixinFragment;
                 break;
             case 1:
-                fragment = new ContactListFragment();
+                if (contactListFragment == null) {
+                    contactListFragment = new ContactListFragment();
+                    transaction.add(R.id.fragment, contactListFragment, "CONTACT_LIST_FRAGMENT");
+                }
+                fragmentToShow = contactListFragment;
                 break;
             case 2:
-                fragment = new FindFragment();
+                if (findFragment == null) {
+                    findFragment = new FindFragment();
+                    transaction.add(R.id.fragment, findFragment, "FIND_FRAGMENT");
+                }
+                fragmentToShow = findFragment;
                 break;
             case 3:
-                fragment = new SelfFragment();
+                if (selfFragment == null) {
+                    selfFragment = new SelfFragment();
+                    transaction.add(R.id.fragment, selfFragment, "SELF_FRAGMENT");
+                }
+                fragmentToShow = selfFragment;
                 break;
         }
 
-        if (fragment != null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment, fragment)
-                    .commit();
+        if (fragmentToShow != null) {
+            transaction.show(fragmentToShow);
         }
+
+        transaction.commit();
 
         // 更新底部标签UI（图标和文字颜色）
         updateTabUI(index);
+    }
+
+    private void hideAllFragments(FragmentTransaction transaction) {
+        if (weixinFragment != null) transaction.hide(weixinFragment);
+        if (contactListFragment != null) transaction.hide(contactListFragment);
+        if (findFragment != null) transaction.hide(findFragment);
+        if (selfFragment != null) transaction.hide(selfFragment);
     }
 
     private void updateTabUI(int selectedIndex) {

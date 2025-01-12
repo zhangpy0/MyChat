@@ -1,6 +1,11 @@
 package top.zhangpy.mychat.util;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
@@ -187,4 +192,100 @@ public class StorageHelper {
             Log.e("StorageHelper", "File copy failed", e);
         }
     }
+
+    // 将 content:// URI 转换为真实路径
+    public static String getRealPathFromURI(Context context, String uriString) {
+        Uri uri = Uri.parse(uriString);
+        String realPath = null;
+
+        // 处理不同类型的 URI
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是 DocumentProvider 类型的 URI
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
+                if (isExternalStorageDocument(uri)) {
+                    // ExternalStorageProvider
+                    String docId = DocumentsContract.getDocumentId(uri);
+                    String[] split = docId.split(":");
+                    String type = split[0];
+                    if ("primary".equalsIgnoreCase(type)) {
+                        return context.getExternalFilesDir(null) + "/" + split[1];
+                    }
+                    // 处理其他类型的存储（如 SD 卡）
+                } else if (isDownloadsDocument(uri)) {
+                    // DownloadsProvider
+                    String id = DocumentsContract.getDocumentId(uri);
+                    if (id.startsWith("raw:")) {
+                        return id.replaceFirst("raw:", "");
+                    }
+                    Uri contentUri = ContentUris.withAppendedId(
+                            Uri.parse("content://downloads/public_downloads"),
+                            Long.parseLong(id)
+                    );
+                    return getDataColumn(context, contentUri, null, null);
+                } else if (isMediaDocument(uri)) {
+                    // MediaProvider
+                    String docId = DocumentsContract.getDocumentId(uri);
+                    String[] split = docId.split(":");
+                    String type = split[0];
+                    Uri contentUri = null;
+                    if ("image".equals(type)) {
+                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("video".equals(type)) {
+                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("audio".equals(type)) {
+                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                    }
+                    String selection = "_id=?";
+                    String[] selectionArgs = new String[]{split[1]};
+                    return getDataColumn(context, contentUri, selection, selectionArgs);
+                }
+            } else {
+                // ContentProvider (非 DocumentProvider)
+                return getDataColumn(context, uri, null, null);
+            }
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            // 如果是文件路径
+            return uri.getPath();
+        }
+
+        return realPath;
+    }
+
+    // 检查 URI 是否是 ExternalStorageProvider
+    private static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    // 检查 URI 是否是 DownloadsProvider
+    private static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    // 检查 URI 是否是 MediaProvider
+    private static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    // 从 ContentProvider 查询路径
+    private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {column};
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int columnIndex = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(columnIndex);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
 }

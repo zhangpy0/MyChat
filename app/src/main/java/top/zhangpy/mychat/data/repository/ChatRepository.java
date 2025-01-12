@@ -44,7 +44,10 @@ public class ChatRepository {
 
     private final UserRepository userRepository;
 
+    private final Context context;
+
     public ChatRepository() {
+        this.context = null;
         this.manager = null;
         this.chatDao = null;
         this.contactRepository = new ContactRepository();
@@ -53,6 +56,7 @@ public class ChatRepository {
     }
 
     public ChatRepository(Context context) {
+        this.context = context;
         this.manager = ChatMessageDatabaseManager.getInstance(context);
         this.chatDao = new DynamicChatDao(manager.getDatabase());
         this.contactRepository = new ContactRepository(context);
@@ -125,7 +129,12 @@ public class ChatRepository {
         File file = null;
         MultipartBody.Part filePart = null;
         if (path != null) {
-            file = new File(path);
+            if (path.startsWith("content://")) {
+                file = new File(StorageHelper.getRealPathFromURI(context, path));
+            } else {
+                file = new File(path);
+            }
+//            file = new File(path);
             RequestBody requestBody = RequestBody.create(file, okhttp3.MediaType.parse("multipart/form-data"));
             filePart = MultipartBody.Part.createFormData("file", file.getName(), requestBody);
         }

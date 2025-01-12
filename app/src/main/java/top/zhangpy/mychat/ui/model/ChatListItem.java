@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.ui.model;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 
 import lombok.Data;
 
@@ -32,11 +33,20 @@ public class ChatListItem {
         }
 
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        long diff = now.getTime() - sendTime.getTime();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+
+        // 今日0点
+        Timestamp today = new Timestamp(calendar.getTimeInMillis());
+        long diff = today.getTime() - sendTime.getTime();
         long oneDay = 24 * 60 * 60 * 1000;
         long oneYear = 365 * oneDay;
 
-        if (diff < oneDay) {
+        if (diff <= 0) {
             this.time = new java.text.SimpleDateFormat("HH:mm").format(sendTime);
         } else if (diff < 1 * oneDay) {
             this.time = "昨天";

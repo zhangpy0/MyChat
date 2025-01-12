@@ -1,12 +1,10 @@
 package top.zhangpy.mychat.ui.view;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,7 +16,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,12 +25,16 @@ import java.util.ArrayList;
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.adapter.MessageAdapter;
 import top.zhangpy.mychat.ui.viewmodel.ChatViewModel;
+import top.zhangpy.mychat.util.HideKeyboard;
 
 public class ChatActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private MessageAdapter adapter;
     private ChatViewModel viewModel;
+
+    private ActivityResultLauncher<Intent> imagePreviewLauncher;
+
 
     private EditText inputMessage;
 
@@ -53,8 +54,29 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        LinearLayout rootLayout = findViewById(R.id.root_layout);
+
+        // 设置触摸监听器
+        rootLayout.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                HideKeyboard.hideKeyboardAndClearFocus(this); // 调用工具方法
+            }
+            return false; // 继续分发触摸事件
+        });
+
         int contactId = getIntent().getIntExtra("contact_id", -1);
         Log.d("ChatActivity", "contactId: " + contactId);
+
+        // 注册 ActivityResultLauncher
+        imagePreviewLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // 从 ImagePreviewActivity 返回，更新消息
+                        viewModel.updateMessagesFromLocal(contactId);
+                    }
+                }
+        );
 
         // 初始化视图
         recyclerView = findViewById(R.id.rv_messages);
@@ -65,6 +87,16 @@ public class ChatActivity extends AppCompatActivity {
         selectPhotoButton = findViewById(R.id.btn_select_photo);
         contactName = findViewById(R.id.tv_contact_name);
         btnBack = findViewById(R.id.btn_back);
+
+        // 输入框设置
+        inputMessage.setOnEditorActionListener((v, actionId, event) -> {
+            if (event != null && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                // 防止换行时退出输入状态
+                inputMessage.append("\n");
+                return true; // 返回 true 表示消费事件
+            }
+            return false;
+        });
 
         // ViewModel初始化
         viewModel = new ViewModelProvider(this).get(ChatViewModel.class);
@@ -130,26 +162,9 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         selectPhotoButton.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                // 申请权限
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-            }
-            // 打开相册选择图片
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            intent.setType("image/*");
-            ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Uri selectedImageUri = result.getData().getData();
-                    if (selectedImageUri != null) {
-                        // 显示图片到编辑区域
-                        Intent intent2 = new Intent(this, ImagePreviewActivity.class);
-                        intent2.putExtra("image_uri", selectedImageUri.toString());
-                        startActivity(intent2);
-                    }
-                } else {
-                    finish(); // 如果用户未选择图片，则退出编辑界面
-                }
-            });
+            Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
+            intent.putExtra("contact_id", contactId); // 传递 contactId
+            imagePreviewLauncher.launch(intent);
         });
 
         btnBack.setOnClickListener(v -> {

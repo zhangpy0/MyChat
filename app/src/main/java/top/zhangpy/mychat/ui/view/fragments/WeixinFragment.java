@@ -60,6 +60,7 @@ public class WeixinFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        viewModel.updateMessages();
         IntentFilter filter = new IntentFilter("top.zhangpy.mychat.UPDATE_MESSAGES");
         requireContext().registerReceiver(messageUpdateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
     }

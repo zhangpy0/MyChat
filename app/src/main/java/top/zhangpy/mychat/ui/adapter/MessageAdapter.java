@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.ui.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,10 +11,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.util.List;
 
@@ -70,12 +76,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         // 对方消息视图
         private final LinearLayout otherMessageContainer;
+        private final LinearLayout otherMessageContent;
         private final ImageView ivOtherAvatar;
         private final TextView tvOtherMessage;
         private final ImageView ivOtherImage;
 
         // 自己消息视图
         private final RelativeLayout myMessageContainer;
+        private final LinearLayout myMessageContent;
         private final ImageView ivMyAvatar;
         private final TextView tvMyMessage;
         private final ImageView ivMyImage;
@@ -89,12 +97,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
             // 初始化对方消息视图
             otherMessageContainer = itemView.findViewById(R.id.other_message_container);
+            otherMessageContent = itemView.findViewById(R.id.other_message_content);
             ivOtherAvatar = itemView.findViewById(R.id.iv_other_avatar);
             tvOtherMessage = itemView.findViewById(R.id.tv_other_message);
             ivOtherImage = itemView.findViewById(R.id.iv_other_image);
 
             // 初始化自己消息视图
             myMessageContainer = itemView.findViewById(R.id.my_message_container);
+            myMessageContent = itemView.findViewById(R.id.my_message_content);
             ivMyAvatar = itemView.findViewById(R.id.iv_my_avatar);
             tvMyMessage = itemView.findViewById(R.id.tv_my_message);
             ivMyImage = itemView.findViewById(R.id.iv_my_image);
@@ -123,12 +133,43 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 } else if ("image".equals(message.getMessageType())) {
                     tvMyMessage.setVisibility(View.GONE);
                     ivMyImage.setVisibility(View.VISIBLE);
+//                    myMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
+//                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
                     Glide.with(itemView.getContext())
                             .load(message.getFilePath())
                             .skipMemoryCache(true) // 跳过内存缓存
                             .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
                             .placeholder(R.drawable.default_avatar) // 占位符
                             .error(R.drawable.default_avatar) // 加载失败时的图片
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    // 加载失败时处理
+                                    return false; // 返回 false 继续让 Glide 显示 error 图片
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    // 图片加载成功后调整 ImageView 高度
+                                    if (resource != null) {
+                                        int imageWidth = resource.getIntrinsicWidth();
+                                        int imageHeight = resource.getIntrinsicHeight();
+
+                                        // 固定宽度
+                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
+
+                                        // 根据宽度计算高度，保持比例
+                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
+
+                                        // 设置 ImageView 的宽高
+                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
+                                        params.width = fixedWidth;
+                                        params.height = calculatedHeight;
+                                        ivMyImage.setLayoutParams(params);
+                                    }
+                                    return false; // 返回 false 继续让 Glide 显示图片
+                                }
+                            })
                             .into(ivMyImage);
                 }
             } else {
@@ -151,15 +192,51 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 } else if ("image".equals(message.getMessageType())) {
                     tvOtherMessage.setVisibility(View.GONE);
                     ivOtherImage.setVisibility(View.VISIBLE);
+//                    otherMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
+//                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
                     Glide.with(itemView.getContext())
                             .load(message.getFilePath())
                             .skipMemoryCache(true) // 跳过内存缓存
                             .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
                             .placeholder(R.drawable.default_avatar) // 占位符
                             .error(R.drawable.default_avatar) // 加载失败时的图片
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    // 加载失败时处理
+                                    return false; // 返回 false 继续让 Glide 显示 error 图片
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    // 图片加载成功后调整 ImageView 高度
+                                    if (resource != null) {
+                                        int imageWidth = resource.getIntrinsicWidth();
+                                        int imageHeight = resource.getIntrinsicHeight();
+
+                                        // 固定宽度
+                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
+
+                                        // 根据宽度计算高度，保持比例
+                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
+
+                                        // 设置 ImageView 的宽高
+                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
+                                        params.width = fixedWidth;
+                                        params.height = calculatedHeight;
+                                        ivMyImage.setLayoutParams(params);
+                                    }
+                                    return false; // 返回 false 继续让 Glide 显示图片
+                                }
+                            })
                             .into(ivOtherImage);
                 }
             }
         }
+
+        private int dpToPx(Context context, int dp) {
+            return Math.round(dp * context.getResources().getDisplayMetrics().density);
+        }
+
     }
 }

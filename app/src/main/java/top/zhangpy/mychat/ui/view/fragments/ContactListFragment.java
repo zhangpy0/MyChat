@@ -25,7 +25,7 @@ public class ContactListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_contactlist, container, false);
-        ContactListAdapter adapter = new ContactListAdapter();
+         adapter = new ContactListAdapter();
 
         RecyclerView recyclerView = view.findViewById(R.id.contact_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -49,9 +49,24 @@ public class ContactListFragment extends Fragment {
             }
         });
 
-        viewModel.updateContactListFromServer();
+//        viewModel.updateContactListFromServer();
 
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Fragment 进入前台时更新联系人列表
+        viewModel.updateContactListFromServer();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            // Fragment 显示到前台时更新联系人列表
+            viewModel.updateContactListFromServer();
+        }
+    }
 }
