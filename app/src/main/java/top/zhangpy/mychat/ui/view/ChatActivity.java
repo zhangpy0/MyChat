@@ -1,6 +1,9 @@
 package top.zhangpy.mychat.ui.view;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -49,6 +52,21 @@ public class ChatActivity extends AppCompatActivity {
 
     private ImageView btnBack;
 
+    private int contactId;
+
+    private final BroadcastReceiver messageUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ("top.zhangpy.mychat.UPDATE_MESSAGES".equals(intent.getAction())) {
+                int updatedContactId = intent.getIntExtra("contact_id", -1);
+                if (updatedContactId == contactId) { // 仅处理当前联系人的消息
+                    viewModel.updateMessagesFromLocal(contactId);
+                }
+            }
+        }
+    };
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +82,7 @@ public class ChatActivity extends AppCompatActivity {
             return false; // 继续分发触摸事件
         });
 
-        int contactId = getIntent().getIntExtra("contact_id", -1);
+        contactId = getIntent().getIntExtra("contact_id", -1);
         Log.d("ChatActivity", "contactId: " + contactId);
 
         // 注册 ActivityResultLauncher
@@ -130,6 +148,21 @@ public class ChatActivity extends AppCompatActivity {
         viewModel.loadMyAvatar();
         viewModel.loadFriendAvatar(contactId);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter("top.zhangpy.mychat.UPDATE_MESSAGES");
+        registerReceiver(messageUpdateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(messageUpdateReceiver);
+    }
+
 
     private void setBind(Integer contactId) {
         // 监听ViewModel中的数据变化

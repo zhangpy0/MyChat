@@ -127,7 +127,7 @@ public class DynamicChatDao {
         database.delete(tableName, "message_id = ?", new String[]{String.valueOf(messageId)});
     }
 
-    // 更新消息 isRead 和 isDownload 字段
+    // 更新消息 isRead 和 isDownload 字段 TODO 测试
     public void updateMessage(String tableName, ChatMessage message) {
         ContentValues values = new ContentValues();
         values.put("is_read", message.getIsRead() ? 1 : 0);

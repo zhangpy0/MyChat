@@ -250,7 +250,8 @@ public class ChatRepository {
         }
         if (chatMessage.getMessageType().equals("image")) {
             insertMessage(tableName, chatMessage);
-            return downloadImage(context, userId, token, chatMessage) != null;
+            ChatMessage messageLocal = chatDao.getLastMessage(tableName);
+            return downloadImage(context, userId, token, messageLocal) != null;
         } else {
             insertMessage(tableName, chatMessage);
             return true;

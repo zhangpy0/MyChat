@@ -46,6 +46,8 @@ public class MessageHandlerService extends Service {
 
     private int totalUnreadMessages = 0;
 
+    private int contactId = -1;
+
     private final Set<Integer> unreadMessageSenders = new HashSet<>();
 
     private final BroadcastReceiver messageReceiver = new BroadcastReceiver() {
@@ -136,6 +138,8 @@ public class MessageHandlerService extends Service {
     private void processMessage(String message) {
         Log.i(TAG, "Handling message: " + message);
 
+        contactId = -1;
+
         ServerMessageModel serverMessage = ServerMessageMapper.mapToServerMessageModel(message);
         if (serverMessage == null) {
             Log.e(TAG, "Failed to parse message: " + message);
@@ -196,22 +200,33 @@ public class MessageHandlerService extends Service {
                     Log.e(TAG, "Invalid message type: " + messageType);
             }
         } else {
-            Log.i(TAG, "Received server chat message: " + serverMessage);
+            Log.i(TAG, "Received chat message: " + serverMessage);
             ChatMessageModel chatMessage = ServerMessageMapper.mapToChatMessageModel(serverMessage);
             ChatMessage chatMessageEntity = ChatMessageMapper.mapToChatMessage(chatMessage);
 
             String tableName = ChatRepository.getTableName(chatMessageEntity);
             chatRepository.createChatTable(tableName);
             try {
-                chatRepository.updateChatFromServer(getApplicationContext(), String.valueOf(userId), token, chatMessageEntity);
+                boolean isUpdated = chatRepository.updateChatFromServer(getApplicationContext(), String.valueOf(userId), token, chatMessageEntity);
+                if (isUpdated) {
+                    Log.i(TAG, "Chat updated from server: " + chatMessageEntity);
+                } else {
+                    Log.e(TAG, "Failed to update chat from server: " + chatMessageEntity);
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Failed to update chat from server: " + e.getMessage());
+            }
+            if (chatMessageEntity.getReceiverType().equals("user")) {
+                contactId = chatMessageEntity.getSenderId();
+            } else {
+                contactId = chatMessageEntity.getGroupId();
             }
         }
     }
 
     private void notifyUIUpdate() {
-        Intent intent = new Intent("top.zhangpy.mychat.UPDATE_MESSAGES");
+        Intent intent = new Intent("top.zhangpy.mychat.UPDATE_MESSAGES")
+                .putExtra("contact_id", contactId);
         sendBroadcast(intent);
     }
 

@@ -50,7 +50,7 @@
                 android:visibility="gone"
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
-                android:maxWidth="200dp"
+                android:maxWidth="300dp"
                 android:maxHeight="300dp" />
 
         </LinearLayout>
@@ -103,7 +103,7 @@
                 android:visibility="gone"
                 android:scaleType="fitCenter"
                 android:adjustViewBounds="true"
-                android:maxWidth="200dp"
+                android:maxWidth="300dp"
                 android:maxHeight="300dp" />
 
         </LinearLayout>
