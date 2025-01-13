@@ -397,4 +397,9 @@ public class ChatRepository {
         }
         return messageListItems;
     }
+
+    public void setAllMessagesRead(Integer userId, Integer friendId) {
+        String tableName = getTableName(friendId, userId);
+        chatDao.updateAllMessageRead(tableName);
+    }
 }

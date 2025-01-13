@@ -135,6 +135,11 @@ public class ChatViewModel extends AndroidViewModel {
         });
     }
 
+    public void setAllMessagesRead(Integer friendId) {
+        Integer userId = loadUserId();
+        chatRepository.setAllMessagesRead(userId, friendId);
+    }
+
     private Integer loadUserId() {
         SharedPreferences prefs = getApplication().getApplicationContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         return prefs.getInt("user_id", -1);

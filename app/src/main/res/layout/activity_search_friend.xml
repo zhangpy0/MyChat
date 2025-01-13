@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <!-- 顶部搜索栏 -->
+    <LinearLayout
+        android:id="@+id/top_layout"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:background="#F5F5F5"
+        android:padding="8dp"
+        android:orientation="horizontal">
+
+
+        <!-- 搜索框 -->
+        <LinearLayout
+            android:id="@+id/search_layout"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            android:layout_toStartOf="@id/tv_cancel"
+            android:layout_alignParentStart="true"
+            android:background="@drawable/search_background"
+            android:layout_margin="8dp"
+            android:layout_weight="20">
+
+            <ImageView
+                android:id="@+id/search_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/search"
+                />
+
+            <EditText
+                android:id="@+id/search_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="8dp"
+                android:layout_marginStart="8dp"
+                android:hint="账号"
+                android:textColor="#909090"
+                android:textSize="12sp"
+                android:singleLine="true"
+                android:background="@null"
+                android:inputType="text" />
+
+        </LinearLayout>
+
+        <!-- 取消按钮 -->
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="取消"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- 分界线 -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="#90909090" />
+
+    <!-- 提示框 -->
+    <LinearLayout
+        android:id="@+id/tips_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/top_layout"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- 静态图片 -->
+        <ImageView
+            android:id="@+id/tips_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/tab_settings_pressed" />
+
+        <!-- 动态文字 -->
+        <TextView
+            android:id="@+id/tips_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_gravity="center_vertical"
+            android:text="搜索:"
+            android:textColor="#909090"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</LinearLayout>

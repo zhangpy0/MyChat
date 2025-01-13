@@ -108,4 +108,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.belerweb/pinyin4j
     implementation 'com.belerweb:pinyin4j:2.5.1'
 
+    // https://mvnrepository.com/artifact/com.github.chrisbanes/PhotoView
+    implementation 'com.github.chrisbanes:PhotoView:462338'
 }

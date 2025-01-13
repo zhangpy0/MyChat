@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.ui.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,8 @@ import lombok.Getter;
 import lombok.Setter;
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.model.MessageListItem;
+import top.zhangpy.mychat.ui.view.ContactInfoActivity;
+import top.zhangpy.mychat.ui.view.ImageViewActivity;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -41,7 +44,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Setter
     private String otherAvatarPath;
 
-    public MessageAdapter(Context context, List<MessageListItem> messages, String myAvatarPath, String otherAvatarPath) {
+    @Getter
+    private int contactId;
+
+    public MessageAdapter(Context context, List<MessageListItem> messages, String myAvatarPath, String otherAvatarPath, int contactId) {
         this.context = context;
         this.messages = messages;
         if (myAvatarPath == null) {
@@ -52,6 +58,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
         this.myAvatarPath = myAvatarPath;
         this.otherAvatarPath = otherAvatarPath;
+        this.contactId = contactId;
     }
 
     @NonNull
@@ -133,8 +140,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 } else if ("image".equals(message.getMessageType())) {
                     tvMyMessage.setVisibility(View.GONE);
                     ivMyImage.setVisibility(View.VISIBLE);
-//                    myMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
-//                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
+
                     Glide.with(itemView.getContext())
                             .load(message.getFilePath())
                             .skipMemoryCache(true) // 跳过内存缓存
@@ -171,6 +177,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 }
                             })
                             .into(ivMyImage);
+
+                            ivMyImage.setOnClickListener(v -> {
+                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
+                                intent.putExtra("image_url", message.getFilePath());
+                                itemView.getContext().startActivity(intent);
+                            });
                 }
             } else {
                 // 显示对方的消息
@@ -184,6 +196,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         .placeholder(R.drawable.default_avatar) // 占位符
                         .error(R.drawable.default_avatar) // 加载失败时的图片
                         .into(ivOtherAvatar);
+
+                ivOtherAvatar.setOnClickListener(v -> {
+                    int contactId = ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId();
+                    Intent intent = new Intent(itemView.getContext(), ContactInfoActivity.class);
+                    intent.putExtra("contact_id", contactId);
+                    itemView.getContext().startActivity(intent);
+                });
 
                 if ("text".equals(message.getMessageType())) {
                     tvOtherMessage.setVisibility(View.VISIBLE);
@@ -231,6 +250,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 }
                             })
                             .into(ivOtherImage);
+
+                            ivOtherImage.setOnClickListener(v -> {
+                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
+                                intent.putExtra("image_url", message.getFilePath());
+                                itemView.getContext().startActivity(intent);
+                            });
                 }
             }
         }

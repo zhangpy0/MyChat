@@ -52,6 +52,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private ImageView btnBack;
 
+    private ImageView contactInfo;
+
     private int contactId;
 
     private final BroadcastReceiver messageUpdateReceiver = new BroadcastReceiver() {
@@ -105,6 +107,7 @@ public class ChatActivity extends AppCompatActivity {
         selectPhotoButton = findViewById(R.id.btn_select_photo);
         contactName = findViewById(R.id.tv_contact_name);
         btnBack = findViewById(R.id.btn_back);
+        contactInfo = findViewById(R.id.btn_contact_details);
 
         // 输入框设置
         inputMessage.setOnEditorActionListener((v, actionId, event) -> {
@@ -132,7 +135,9 @@ public class ChatActivity extends AppCompatActivity {
                 this,
                 new ArrayList<>(), // 初始数据为空
                 null,
-                null
+                null,
+                contactId
+
         );
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -160,6 +165,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        viewModel.setAllMessagesRead(contactId);
         unregisterReceiver(messageUpdateReceiver);
     }
 
@@ -198,6 +204,12 @@ public class ChatActivity extends AppCompatActivity {
             Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
             intent.putExtra("contact_id", contactId); // 传递 contactId
             imagePreviewLauncher.launch(intent);
+        });
+
+        contactInfo.setOnClickListener(v -> {
+            Intent intent = new Intent(ChatActivity.this, ContactInfoActivity.class);
+            intent.putExtra("contact_id", contactId);
+            startActivity(intent);
         });
 
         btnBack.setOnClickListener(v -> {

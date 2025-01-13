@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -23,6 +24,12 @@ public class ContactInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_contact_info);
 
         int contactId = getIntent().getIntExtra("contact_id", -1);
+
+        if (contactId == -1) {
+            Toast.makeText(this, "联系人不存在", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // 获取 ViewModel
         contactInfoViewModel = new ViewModelProvider(this).get(ContactInfoViewModel.class);
