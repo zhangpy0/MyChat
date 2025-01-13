@@ -225,7 +225,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                         ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
                                         params.width = fixedWidth;
                                         params.height = calculatedHeight;
-                                        ivMyImage.setLayoutParams(params);
+                                        ivOtherImage.setLayoutParams(params);
                                     }
                                     return false; // 返回 false 继续让 Glide 显示图片
                                 }
