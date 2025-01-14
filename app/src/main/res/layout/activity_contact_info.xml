@@ -109,7 +109,7 @@
         android:layout_marginVertical="8dp" />
 
     <LinearLayout
-        android:id="@+id/ll_settings"
+        android:id="@+id/layout_interact"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -129,7 +129,7 @@
 
 
         <TextView
-            android:id="@+id/tv_settings"
+            android:id="@+id/tv_interact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="发消息"

@@ -78,6 +78,8 @@
             android:exported="true" />
         <activity android:name=".ui.view.SearchFriendActivity"
             android:exported="true" />
+        <activity android:name=".ui.view.SendApplyActivity"
+            android:exported="true" />
 
         <service
             android:name=".data.service.MessageReceiverService"

@@ -460,4 +460,14 @@ public class ContactRepository {
         }
         return applyListItems;
     }
+
+    public boolean isMyFriend(int userId,int friendId) throws IOException {
+        List<Friend> friends = getFriendsByUserId(userId);
+        for (Friend friend : friends) {
+            if (friend.getFriendId().equals(friendId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

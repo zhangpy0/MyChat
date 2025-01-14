@@ -2,7 +2,9 @@ package top.zhangpy.mychat.ui.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +26,7 @@ public class ContactInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_contact_info);
 
         int contactId = getIntent().getIntExtra("contact_id", -1);
+        boolean isSearch = getIntent().getBooleanExtra("is_search", false);
 
         if (contactId == -1) {
             Toast.makeText(this, "联系人不存在", Toast.LENGTH_SHORT).show();
@@ -43,6 +46,9 @@ public class ContactInfoActivity extends AppCompatActivity {
         TextView gender = findViewById(R.id.tv_gender);
         TextView region = findViewById(R.id.tv_region);
         ImageView avatar = findViewById(R.id.iv_avatar);
+        LinearLayout interactionLayout = findViewById(R.id.layout_interact);
+        TextView tvInteract = findViewById(R.id.tv_interact);
+
 
         contactInfoViewModel.getUpdateResult().observe(this, updateResult -> {
             if (updateResult) {
@@ -60,15 +66,28 @@ public class ContactInfoActivity extends AppCompatActivity {
             }
         });
 
+        contactInfoViewModel.getUpdateResultIsFriend().observe(this, updateResultIsFriend -> {
+            if (updateResultIsFriend) {
+                boolean isFriend = contactInfoViewModel.getIsFriend().getValue();
+                if (isFriend) {
+                    interactionLayout.setOnClickListener(view -> {
+                        Intent intent = new Intent(this, ChatActivity.class);
+                        intent.putExtra("contact_id", contactId);
+                        startActivity(intent);
+                    });
+                } else {
+                    tvInteract.setText("添加好友");
+                    findViewById(R.id.iv_settings_icon).setVisibility(View.GONE);
+                    interactionLayout.setOnClickListener(view -> {
+                        Intent intent = new Intent(this, SendApplyActivity.class);
+                        intent.putExtra("contact_id", contactId);
+                        startActivity(intent);
+                    });
+                }
+            }
+        });
+
         // 设置返回按钮点击事件
         findViewById(R.id.btn_back).setOnClickListener(view -> finish());
-
-        // 设置“发消息”按钮点击事件
-        findViewById(R.id.ll_settings).setOnClickListener(view -> {
-            Intent intent = new Intent(this, ChatActivity.class);
-            intent.putExtra("contact_id", contactId);
-            startActivity(intent);
-            finish();
-        });
     }
 }

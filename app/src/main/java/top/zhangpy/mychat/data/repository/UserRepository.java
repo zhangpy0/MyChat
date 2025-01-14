@@ -168,6 +168,7 @@ public class UserRepository {
             newProfile.setNickname(userProfileModel.getNickname());
             newProfile.setGender(userProfileModel.getGender());
             newProfile.setRegion(userProfileModel.getRegion());
+            newProfile.setAvatarPath(oldUserProfile.getAvatarPath());
             updateUserProfile(newProfile);
         }
     }

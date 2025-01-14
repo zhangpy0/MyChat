@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
@@ -41,6 +42,12 @@ public class ContactInfoViewModel extends AndroidViewModel {
 
     @Getter
     private final MutableLiveData<Boolean> updateResult = new MutableLiveData<>(false);
+
+    @Getter
+    private final MutableLiveData<Boolean> updateResultIsFriend = new MutableLiveData<>(false);
+
+    @Getter
+    private final MutableLiveData<Boolean> isFriend = new MutableLiveData<>(false);
 
     public ContactInfoViewModel(@NonNull Application application) {
         super(application);
@@ -93,6 +100,22 @@ public class ContactInfoViewModel extends AndroidViewModel {
                 Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
             }
         });
+    }
+
+    public boolean isMyFriend(int friendId) {
+        int userId = loadUserId();
+        AtomicBoolean isMyFriend = new AtomicBoolean(false);
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                boolean is = contactRepository.isMyFriend(userId, friendId);
+                isMyFriend.set(is);
+                isFriend.postValue(is);
+                updateResultIsFriend.postValue(true);
+            } catch (IOException e) {
+                Log.e("ContactInfoViewModel", "isMyFriend: ", e);
+            }
+        });
+        return isMyFriend.get();
     }
 
 
