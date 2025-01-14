@@ -71,6 +71,10 @@ public class UserRepository {
 
     public void updateUserProfile(UserProfile userProfile) {
         UserProfile oldUserProfile = getUserProfileById(userProfile.getUserId());
+        if (oldUserProfile == null) {
+            insertUserProfile(userProfile);
+            return;
+        }
         userProfile.setProfileId(oldUserProfile.getProfileId());
         database.userProfileDao().updateUserProfile(userProfile);
     }

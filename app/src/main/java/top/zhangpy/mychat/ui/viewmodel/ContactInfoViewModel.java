@@ -72,13 +72,16 @@ public class ContactInfoViewModel extends AndroidViewModel {
                 requestMapModel.setFriendId(String.valueOf(friendId));
                 UserProfileModel userProfileModel = userRepository.getUserProfile(token, requestMapModel);
                 UserProfile oldUserProfile = userRepository.getUserProfileById(friendId);
-                File oldAvatarFileDir = new File(oldUserProfile.getAvatarPath()).getParentFile();
-                if (oldAvatarFileDir.exists()) {
-                    File[] oldAvatarFiles = oldAvatarFileDir.listFiles();
-                    if (oldAvatarFiles != null) {
-                        for (File oldAvatarFile : oldAvatarFiles) {
-                            if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
-                                Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                // 新用户直接插入
+                if (oldUserProfile != null && oldUserProfile.getAvatarPath() != null) {
+                    File oldAvatarFileDir = new File(oldUserProfile.getAvatarPath()).getParentFile();
+                    if (oldAvatarFileDir.exists()) {
+                        File[] oldAvatarFiles = oldAvatarFileDir.listFiles();
+                        if (oldAvatarFiles != null) {
+                            for (File oldAvatarFile : oldAvatarFiles) {
+                                if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
+                                    Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                                }
                             }
                         }
                     }

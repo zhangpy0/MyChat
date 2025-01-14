@@ -87,6 +87,8 @@ public class ContactInfoActivity extends AppCompatActivity {
             }
         });
 
+        contactInfoViewModel.isMyFriend(contactId);
+
         // 设置返回按钮点击事件
         findViewById(R.id.btn_back).setOnClickListener(view -> finish());
     }
