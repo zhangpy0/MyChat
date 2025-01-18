@@ -375,6 +375,7 @@ public class ContactRepository {
         requestMapModel.setUserId(String.valueOf(userId));
         List<ContactApplyModel> contactApplyModelsFromMe = getContactApplyFromMe(token, requestMapModel);
         List<ContactApplyModel> contactApplyModelsFromOthers = getContactApplyFromOthers(token, requestMapModel);
+        // TODO 优化 本地数据更新
         List<ContactApply> localContactApplies = getAllContactApplies();
         Set<ContactApply> localContactApplySet = new HashSet<>(localContactApplies);
         List<ApplyListItem> applyListItems = new ArrayList<>();
@@ -382,12 +383,30 @@ public class ContactRepository {
             ContactApply contactApply = ContactApplyMapper.mapToContactApply(contactApplyModel);
             if (!localContactApplySet.contains(contactApply)) {
                 insertContactApply(contactApply);
+            } else {
+                ContactApply oldContactApply = localContactApplySet.stream()
+                        .filter(localContactApply -> localContactApply.equals(contactApply))
+                        .findFirst()
+                        .orElse(null);
+                if (oldContactApply != null && !oldContactApply.getStatus().equals(contactApply.getStatus())) {
+                    contactApply.setApplyId(oldContactApply.getApplyId());
+                    updateContactApply(contactApply);
+                }
             }
         }
         for (ContactApplyModel contactApplyModel : contactApplyModelsFromOthers) {
             ContactApply contactApply = ContactApplyMapper.mapToContactApply(contactApplyModel);
             if (!localContactApplySet.contains(contactApply)) {
                 insertContactApply(contactApply);
+            } else {
+                ContactApply oldContactApply = localContactApplySet.stream()
+                        .filter(localContactApply -> localContactApply.equals(contactApply))
+                        .findFirst()
+                        .orElse(null);
+                if (oldContactApply != null && !oldContactApply.getStatus().equals(contactApply.getStatus())) {
+                    contactApply.setApplyId(oldContactApply.getApplyId());
+                    updateContactApply(contactApply);
+                }
             }
         }
         List<ContactApply> contactApplies = getAllContactApplies();

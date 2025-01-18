@@ -25,7 +25,7 @@ public class ContactListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_contactlist, container, false);
-         adapter = new ContactListAdapter();
+        adapter = new ContactListAdapter();
 
         RecyclerView recyclerView = view.findViewById(R.id.contact_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
