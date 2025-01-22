@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.viewmodel.RegisterViewModel;
+import top.zhangpy.mychat.util.StringJudge;
 
 public class RegisterActivity extends AppCompatActivity {
     private RegisterViewModel registerViewModel;
@@ -68,6 +69,21 @@ public class RegisterActivity extends AppCompatActivity {
             if (TextUtils.isEmpty(accountId) || TextUtils.isEmpty(email) ||
                     TextUtils.isEmpty(password) || TextUtils.isEmpty(verificationCode)) {
                 showToast("请填写所有必填字段");
+                return;
+            }
+
+            if (!StringJudge.isIdLegal(accountId)) {
+                showToast("账号长度应在5-10个字符之间，且为数字");
+                return;
+            }
+
+            if (!StringJudge.isEmail(email)) {
+                showToast("邮箱格式不正确");
+                return;
+            }
+
+            if (!StringJudge.isInRange(password)) {
+                showToast("密码长度应在5-20个字符之间");
                 return;
             }
 

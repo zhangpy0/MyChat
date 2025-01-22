@@ -261,6 +261,8 @@ public class ContactRepository {
             friends.add(friendModel.mapToFriend(Integer.parseInt(requestMapModel.getUserId())));
         }
 
+
+        // TODO 之前的好友也需要更新用户信息
         List<Friend> localFriends = getFriendsByUserId(Integer.parseInt(requestMapModel.getUserId()));
         Set<Friend> localFriendSet = new HashSet<>(localFriends);
         Set<Friend> friendSet = new HashSet<>(friends);
@@ -284,6 +286,17 @@ public class ContactRepository {
         }
         for (Friend friend : deleteFriends) {
             deleteFriend(friend);
+        }
+        List<Friend> allFriends = getAllFriends();
+        for (Friend friend : allFriends) {
+            Integer friendId = friend.getFriendId();
+            UserProfile userProfile = userRepository.getUserProfileById(friendId);
+            if (userProfile == null) {
+                requestMapModel.setFriendId(String.valueOf(friendId));
+                UserProfileModel userProfileModel = searchUser(token, requestMapModel);
+                UserProfile newProfile = UserProfileMapper.mapToUserProfile(userProfileModel, context);
+                userRepository.insertUserProfile(newProfile);
+            }
         }
         return true;
     }

@@ -36,19 +36,22 @@ public class ContactViewModel extends AndroidViewModel {
         Integer userId = loadUserId();
         String token = loadToken();
         AtomicReference<List<ContactListItem>> contacts = new AtomicReference<>();
-        List<ContactListItem> contactList = null;
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-                contacts.set(contactRepository.getFriendListFromServer(token, userId));
+                List<ContactListItem> friendList = contactRepository.getFriendListFromServer(token, userId);
+                Log.d("ContactViewModel", "updateContactListFromServer: friendList " + friendList.size());
+                contacts.set(friendList);
+                List<ContactListItem> contactList = null;
+                contactList = getInitialContactList();
+                if (contacts.get() != null) {
+                    contactList.addAll(contacts.get());
+                }
+                this.contactList.postValue(contactList);
+                Log.d("ContactViewModel", "updateContactListFromServer: " + contacts.get());
             } catch (IOException e) {
                 Log.e("ContactViewModel", "updateContactListFromServer: ", e);
             }
         });
-        contactList = getInitialContactList();
-        if (contacts.get() != null) {
-            contactList.addAll(contacts.get());
-        }
-        this.contactList.postValue(contactList);
     }
 
     private Integer loadUserId() {

@@ -3,6 +3,7 @@ package top.zhangpy.mychat.ui.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     @SuppressLint("NotifyDataSetChanged")
     public void setContacts(List<ContactListItem> contacts) {
         this.contacts = contacts;
+        Log.d("ContactListAdapter", "contacts updated: " + contacts.size());
         notifyDataSetChanged();
     }
 

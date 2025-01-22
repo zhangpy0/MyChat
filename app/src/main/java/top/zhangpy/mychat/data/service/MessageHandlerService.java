@@ -117,6 +117,10 @@ public class MessageHandlerService extends Service {
         unregisterReceiver(messageReceiver);
         unregisterReceiver(clearNotificationReceiver);
         Log.i(TAG, "MessageHandlerService stopped and receiver unregistered");
+
+        // 广播 MessageHandlerService 被停止的事件
+        Intent intent = new Intent("top.zhangpy.mychat.MESSAGE_HANDLER_SERVICE_STOPPED");
+        sendBroadcast(intent);
     }
 
     @Nullable

@@ -6,8 +6,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
@@ -33,6 +35,16 @@ public class MessageReceiverService extends Service {
     private WebSocket webSocket;
     private OkHttpClient client;
 
+    private final BroadcastReceiver serviceStoppedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ("top.zhangpy.mychat.MESSAGE_HANDLER_SERVICE_STOPPED".equals(intent.getAction())) {
+                Log.i("MessageReceiverService", "MessageHandlerService stopped, restarting...");
+                restartMessageHandlerService();
+            }
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,6 +52,10 @@ public class MessageReceiverService extends Service {
         startForeground(1, getNotification("Connecting to server..."));
 
         connectWebSocket();
+
+        // 注册广播接收器监听 MessageHandlerService 停止事件
+        IntentFilter filter = new IntentFilter("top.zhangpy.mychat.MESSAGE_HANDLER_SERVICE_STOPPED");
+        registerReceiver(serviceStoppedReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
     }
 
     private void connectWebSocket() {
@@ -111,7 +127,7 @@ public class MessageReceiverService extends Service {
                     Log.e("MessageReceiverService", "Heartbeat failed: " + e.getMessage());
                 }
             }
-        }, 0, 2, TimeUnit.SECONDS); // 每5秒发送一次
+        }, 0, 5, TimeUnit.SECONDS); // 每5秒发送一次
     }
 
     private void reconnectWebSocket() {
@@ -160,6 +176,11 @@ public class MessageReceiverService extends Service {
         }
     }
 
+    private void restartMessageHandlerService() {
+        Intent intent = new Intent(this, MessageHandlerService.class);
+        startService(intent);
+    }
+
     private String loadToken() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         return prefs.getString("auth_token", null);
@@ -171,6 +192,7 @@ public class MessageReceiverService extends Service {
         if (webSocket != null) {
             webSocket.close(1000, "Service destroyed");
         }
+        unregisterReceiver(serviceStoppedReceiver);
     }
 
     @Nullable

@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.ui.view.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,6 +18,7 @@ import top.zhangpy.mychat.ui.adapter.ContactListAdapter;
 import top.zhangpy.mychat.ui.tools.SideBar;
 import top.zhangpy.mychat.ui.viewmodel.ContactViewModel;
 
+// TODO: update异常
 public class ContactListFragment extends Fragment {
     private ContactViewModel viewModel;
     private ContactListAdapter adapter;
@@ -34,8 +37,7 @@ public class ContactListFragment extends Fragment {
         SideBar sideBar = view.findViewById(R.id.side_bar);
 
 
-
-        viewModel = new ContactViewModel(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this).get(ContactViewModel.class);
         viewModel.getContactList().observe(getViewLifecycleOwner(), adapter::setContacts);
 
         sideBar.setOnSelectCallback(letter -> {
@@ -49,8 +51,8 @@ public class ContactListFragment extends Fragment {
             }
         });
 
-//        viewModel.updateContactListFromServer();
-
+        viewModel.updateContactListFromServer();
+        Log.d("ContactListFragment", "updateContactListFromServer");
         return view;
     }
 
@@ -58,7 +60,7 @@ public class ContactListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         // Fragment 进入前台时更新联系人列表
-        viewModel.updateContactListFromServer();
+//        viewModel.updateContactListFromServer();
     }
 
     @Override
@@ -66,7 +68,9 @@ public class ContactListFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             // Fragment 显示到前台时更新联系人列表
+            Log.d("ContactListFragment", "onHiddenChanged");
             viewModel.updateContactListFromServer();
+            Log.d("ContactListFragment", "updateContactListFromServer");
         }
     }
 }
