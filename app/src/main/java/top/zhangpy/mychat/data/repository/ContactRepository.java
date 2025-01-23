@@ -262,7 +262,7 @@ public class ContactRepository {
         }
 
 
-        // TODO 之前的好友也需要更新用户信息
+        // 之前的好友也需要更新用户信息 已修改
         List<Friend> localFriends = getFriendsByUserId(Integer.parseInt(requestMapModel.getUserId()));
         Set<Friend> localFriendSet = new HashSet<>(localFriends);
         Set<Friend> friendSet = new HashSet<>(friends);
@@ -302,6 +302,7 @@ public class ContactRepository {
     }
 
 
+    // TODO 群聊信息更新 同上
     public void updateContactOfGroup(String token, RequestMapModel requestMap) throws IOException {
         List<Integer> groupIds = getGroups(token, requestMap);
 

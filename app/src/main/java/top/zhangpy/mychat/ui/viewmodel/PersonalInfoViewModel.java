@@ -32,7 +32,7 @@ public class PersonalInfoViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> updateResult = new MutableLiveData<>(false);
 
     /*
-    TODO
+    已解决
     1. 性别修改：数据库local,server成功；UI失败 -> 全部成功
     2. 地区，昵称修改：数据库local,server失败；UI成功
     3. 头像修改：数据库local,server成功；UIself成功，UIpersonal需重新打开 -> 全部成功

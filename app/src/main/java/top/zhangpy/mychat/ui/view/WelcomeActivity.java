@@ -19,8 +19,7 @@ import top.zhangpy.mychat.data.mapper.UserAccountMapper;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.UserAccountModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
-import top.zhangpy.mychat.data.service.MessageHandlerService;
-import top.zhangpy.mychat.data.service.MessageReceiverService;
+import top.zhangpy.mychat.data.service.MessageService;
 
 
 public class WelcomeActivity extends Activity {
@@ -106,32 +105,19 @@ public class WelcomeActivity extends Activity {
 
     private void runServices() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        boolean isReceiverServiceRunning = false;
-        boolean isHandlerServiceRunning = false;
+        boolean isMessageServiceRunning = false;
 
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (MessageReceiverService.class.getName().equals(service.service.getClassName())) {
-                isReceiverServiceRunning = true;
-            }
-            if (MessageHandlerService.class.getName().equals(service.service.getClassName())) {
-                isHandlerServiceRunning = true;
+            if (MessageService.class.getName().equals(service.service.getClassName())) {
+                isMessageServiceRunning = true;
             }
         }
-        if (!isReceiverServiceRunning) {
-            Intent serviceReceiverIntent = new Intent(this.getApplication(), MessageReceiverService.class);
+        if (!isMessageServiceRunning) {
+            Intent serviceReceiverIntent = new Intent(this.getApplication(), MessageService.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 getApplication().getApplicationContext().startForegroundService(serviceReceiverIntent); // Android 8.0+ 启动前台服务
             } else {
                 getApplication().getApplicationContext().startService(serviceReceiverIntent); // 低版本直接启动服务
-            }
-        }
-
-        if (!isHandlerServiceRunning) {
-            Intent serviceIntent = new Intent(this.getApplication(), MessageHandlerService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getApplication().getApplicationContext().startForegroundService(serviceIntent); // Android 8.0+ 启动前台服务
-            } else {
-                getApplication().getApplicationContext().startService(serviceIntent); // 低版本直接启动服务
             }
         }
     }

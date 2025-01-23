@@ -55,7 +55,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         holder.time.setText(message.getTime());
 
         holder.itemView.setOnClickListener(v -> {
-            // TODO 跳转到聊天界面
+            //  跳转到聊天界面
             Context context = holder.itemView.getContext();
             Intent intent = new Intent(context, ChatActivity.class);
             intent.putExtra("contact_id", message.getId());

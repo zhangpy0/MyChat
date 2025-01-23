@@ -43,7 +43,7 @@
             android:gravity="center_vertical"
             android:textColor="#A8A8A8"
             android:ellipsize="end"
-            android:singleLine="true"
+            android:singleLine="false"
             android:text="内容"/>
     </LinearLayout>
 

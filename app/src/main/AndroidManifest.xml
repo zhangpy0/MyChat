@@ -40,19 +40,19 @@
         </activity>
         <activity
             android:name=".ui.view.WelcomeActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".ui.view.LoginActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".ui.view.RegisterActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".ui.view.ChatListActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".ui.view.PersonalInfoActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
         <activity
             android:name=".ui.view.EditAvatarActivity"
             android:exported="true" />
@@ -81,20 +81,12 @@
         <activity android:name=".ui.view.SendApplyActivity"
             android:exported="true" />
 
-        <service
-            android:name=".data.service.MessageReceiverService"
-            android:exported="true"
-            android:foregroundServiceType="dataSync"
-            android:permission="android.permission.FOREGROUND_SERVICE"
-            android:process=":message_receiver"></service>
-
-        <service
-            android:name=".data.service.MessageHandlerService"
+        <service android:name=".data.service.MessageService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:permission="android.permission.FOREGROUND_SERVICE"
-            android:process=":message_handler" />
+            android:permission="android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+            android:process=":MessageService" />
 
 
     </application>

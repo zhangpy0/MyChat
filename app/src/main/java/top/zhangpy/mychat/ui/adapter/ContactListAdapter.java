@@ -29,7 +29,7 @@ import top.zhangpy.mychat.ui.view.GroupChatActivity;
 import top.zhangpy.mychat.ui.view.PublicAccountActivity;
 import top.zhangpy.mychat.ui.view.TagActivity;
 
-// TODO glide 加载资源图片失败 -> 已解决
+// glide 加载资源图片失败 -> 已解决
 public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.ContactViewHolder> {
 
     private List<ContactListItem> contacts = new ArrayList<>();

@@ -18,7 +18,7 @@ import top.zhangpy.mychat.ui.adapter.ContactListAdapter;
 import top.zhangpy.mychat.ui.tools.SideBar;
 import top.zhangpy.mychat.ui.viewmodel.ContactViewModel;
 
-// TODO: update异常
+//  update异常 已解决
 public class ContactListFragment extends Fragment {
     private ContactViewModel viewModel;
     private ContactListAdapter adapter;

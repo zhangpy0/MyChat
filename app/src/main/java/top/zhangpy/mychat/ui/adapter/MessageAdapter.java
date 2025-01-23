@@ -209,7 +209,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     ivOtherImage.setVisibility(View.GONE);
                     tvOtherMessage.setText(message.getContent());
                 } else if ("image".equals(message.getMessageType())) {
-                    // TODO 图片比例
+                    // 图片比例 已解决
                     tvOtherMessage.setVisibility(View.GONE);
                     ivOtherImage.setVisibility(View.VISIBLE);
 //                    otherMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(

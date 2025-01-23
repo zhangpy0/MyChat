@@ -145,6 +145,7 @@ public class MessageReceiverService extends Service {
     private void broadcastMessage(String message) {
         Intent intent = new Intent("top.zhangpy.mychat.MESSAGE_RECEIVED");
         intent.putExtra("message", message);
+        Log.i("MessageReceiverService", "Broadcasting message: " + message);
         sendBroadcast(intent);
     }
 
@@ -164,7 +165,7 @@ public class MessageReceiverService extends Service {
         }
     }
 
-    private void createNotificationChannel() {
+    public void createNotificationChannel() {
         NotificationChannel serviceChannel = new NotificationChannel(
                 CHANNEL_ID,
                 "Message Service Channel",
