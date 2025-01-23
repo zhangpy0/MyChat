@@ -58,23 +58,33 @@ public class Converter {
         return sb.toString();
     }
     /**     * 获取汉字字符串的汉语拼音，英文字符不变     */
-    public static String getPinYin(String chines) {
+    public static String getPinYin(String s) {
         StringBuilder sb = new StringBuilder();
         sb.setLength(0);
-        char[] nameChar = chines.toCharArray();
+        char[] nameChar = s.toCharArray();
         HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
         defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);
         defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+
         for (int i = 0; i < nameChar.length; i++) {
-            if (nameChar[i] > 128) {
+            char currentChar = nameChar[i];
+
+            // 判断是否是汉字（Unicode范围）
+            if (Character.toString(currentChar).matches("[\u4e00-\u9fa5]")) {
                 try {
-                    sb.append(PinyinHelper.toHanyuPinyinStringArray(nameChar[i], defaultFormat)[0]);}
-                catch (Exception e) {
+                    // 如果是汉字，转拼音
+                    sb.append(PinyinHelper.toHanyuPinyinStringArray(currentChar, defaultFormat)[0]);
+                } catch (Exception e) {
                     e.printStackTrace();
+                    sb.append("#"); // 出现异常时，使用#字符
                 }
             }
+            // 判断是否是英文字符（ASCII范围）
+            else if (Character.isLetter(currentChar)) {
+                sb.append(currentChar); // 英文字符直接保留
+            }
             else {
-                sb.append(nameChar[i]);
+                sb.append("#"); // 其他字符转为#
             }
         }
         return sb.toString();
