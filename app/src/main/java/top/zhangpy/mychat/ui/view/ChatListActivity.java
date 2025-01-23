@@ -16,6 +16,7 @@ import top.zhangpy.mychat.ui.view.fragments.FindFragment;
 import top.zhangpy.mychat.ui.view.fragments.SelfFragment;
 import top.zhangpy.mychat.ui.view.fragments.WeixinFragment;
 import top.zhangpy.mychat.ui.viewmodel.ChatListViewModel;
+import top.zhangpy.mychat.util.PermissionUtils;
 
 public class ChatListActivity extends FragmentActivity {
 
@@ -42,6 +43,13 @@ public class ChatListActivity extends FragmentActivity {
 
         if (savedInstanceState == null) {
             viewModel.setSelectedTab(0);
+        }
+
+        if (!PermissionUtils.hasStoragePermission(this)) {
+            PermissionUtils.checkForManageStoragePermission(this);
+        }
+        if (!PermissionUtils.isNotificationPermissionGranted(this)) {
+            PermissionUtils.requestNotificationPermission(this);
         }
     }
 
