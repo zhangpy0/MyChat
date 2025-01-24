@@ -126,6 +126,10 @@ public class RegisterActivity extends AppCompatActivity {
             if (errorMessage != null) {
                 showToast(errorMessage);
             }
+            if ("注册成功".equals(errorMessage)) {
+                showToast("注册成功,请登录");
+                finish();
+            }
         });
     }
 
