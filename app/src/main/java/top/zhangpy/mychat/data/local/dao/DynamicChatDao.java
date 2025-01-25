@@ -33,6 +33,40 @@ public class DynamicChatDao {
         database.insert(tableName, null, values);
     }
 
+    public ChatMessage getMessageByID(String tableName, int messageId) {
+        Cursor cursor = database.query(tableName, null, "message_id = ?", new String[]{String.valueOf(messageId)}, null, null, null);
+        ChatMessage message = new ChatMessage();
+        int groupId = 0;
+        int receiverId = 0;
+        String receiverType;
+        String[] tableNames = tableName.split("_");
+        if (tableNames[0].equals("group")) {
+            groupId = Integer.parseInt(tableNames[1]);
+            receiverType = "group";
+        } else {
+            receiverId = Integer.parseInt(tableNames[2]);
+            receiverType = "user";
+        }
+
+        if (cursor.moveToFirst()) {
+            message.setReceiverType(receiverType);
+            message.setReceiverId(receiverId);
+            message.setMessageId(cursor.getInt(cursor.getColumnIndexOrThrow("message_id")));
+            message.setSenderId(cursor.getInt(cursor.getColumnIndexOrThrow("sender_id")));
+            message.setGroupId(cursor.getInt(cursor.getColumnIndexOrThrow("group_id")));
+            message.setSendTime(new java.sql.Timestamp(cursor.getLong(cursor.getColumnIndexOrThrow("send_time"))));
+            message.setContent(cursor.getString(cursor.getColumnIndexOrThrow("content")));
+            message.setMessageType(cursor.getString(cursor.getColumnIndexOrThrow("message_type")));
+            message.setFilePath(cursor.getString(cursor.getColumnIndexOrThrow("file_path")));
+            message.setFileName(cursor.getString(cursor.getColumnIndexOrThrow("file_name")));
+            message.setFileId(cursor.getInt(cursor.getColumnIndexOrThrow("file_id")));
+            message.setIsRead(cursor.getInt(cursor.getColumnIndexOrThrow("is_read")) == 1);
+            message.setIsDownload(cursor.getInt(cursor.getColumnIndexOrThrow("is_download")) == 1);
+        }
+        cursor.close();
+        return message;
+    }
+
     // 升序
     // 查询消息
     public List<ChatMessage> getMessages(String tableName) {

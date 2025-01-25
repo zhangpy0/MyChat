@@ -19,4 +19,8 @@ public class MessageListItem {
 
     private Timestamp sendTime;
 
+    private String fileName;
+
+    private Long fileSize;
+
 }

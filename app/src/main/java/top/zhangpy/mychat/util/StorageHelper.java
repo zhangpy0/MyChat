@@ -246,8 +246,9 @@ public class StorageHelper {
         } else if ("file".equalsIgnoreCase(uri.getScheme())) {
             // 如果是文件路径
             return uri.getPath();
+        } else {
+            realPath = uriString;
         }
-
         return realPath;
     }
 
@@ -287,5 +288,18 @@ public class StorageHelper {
         }
         return null;
     }
+
+    public static String formatFileSize(long sizeInBytes) {
+        String formattedSize = "";
+        if (sizeInBytes >= 1024 * 1024) {
+            formattedSize = String.format("%.2f MB", sizeInBytes / (1024.0 * 1024.0));
+        } else if (sizeInBytes >= 1024) {
+            formattedSize = String.format("%.2f KB", sizeInBytes / 1024.0);
+        } else {
+            formattedSize = sizeInBytes + " B";
+        }
+        return formattedSize;
+    }
+
 
 }

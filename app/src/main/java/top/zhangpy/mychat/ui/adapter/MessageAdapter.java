@@ -22,6 +22,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.File;
 import java.util.List;
 
 import lombok.Getter;
@@ -29,7 +30,9 @@ import lombok.Setter;
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.ui.view.ContactInfoActivity;
+import top.zhangpy.mychat.ui.view.FileViewActivity;
 import top.zhangpy.mychat.ui.view.ImageViewActivity;
+import top.zhangpy.mychat.util.StorageHelper;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
 
@@ -88,12 +91,25 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         private final TextView tvOtherMessage;
         private final ImageView ivOtherImage;
 
+        private final LinearLayout llOtherFile;
+
+        private final TextView tvOtherFileName;
+
+        private final TextView tvOtherFileSize;
+
+
         // 自己消息视图
         private final RelativeLayout myMessageContainer;
         private final LinearLayout myMessageContent;
         private final ImageView ivMyAvatar;
         private final TextView tvMyMessage;
         private final ImageView ivMyImage;
+
+        private final LinearLayout llMyFile;
+
+        private final TextView tvMyFileName;
+
+        private final TextView tvMyFileSize;
 
         private String myAvatarPath;
 
@@ -108,6 +124,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             ivOtherAvatar = itemView.findViewById(R.id.iv_other_avatar);
             tvOtherMessage = itemView.findViewById(R.id.tv_other_message);
             ivOtherImage = itemView.findViewById(R.id.iv_other_image);
+            llOtherFile = itemView.findViewById(R.id.ll_other_file);
+            tvOtherFileName = itemView.findViewById(R.id.tv_other_file_name);
+            tvOtherFileSize = itemView.findViewById(R.id.tv_other_file_size);
 
             // 初始化自己消息视图
             myMessageContainer = itemView.findViewById(R.id.my_message_container);
@@ -115,6 +134,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             ivMyAvatar = itemView.findViewById(R.id.iv_my_avatar);
             tvMyMessage = itemView.findViewById(R.id.tv_my_message);
             ivMyImage = itemView.findViewById(R.id.iv_my_image);
+            llMyFile = itemView.findViewById(R.id.ll_my_file);
+            tvMyFileName = itemView.findViewById(R.id.tv_my_file_name);
+            tvMyFileSize = itemView.findViewById(R.id.tv_my_file_size);
 
             this.myAvatarPath = myAvatarPath;
             this.otherAvatarPath = otherAvatarPath;
@@ -137,9 +159,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     tvMyMessage.setVisibility(View.VISIBLE);
                     ivMyImage.setVisibility(View.GONE);
                     tvMyMessage.setText(message.getContent());
+                    llMyFile.setVisibility(View.GONE);
                 } else if ("image".equals(message.getMessageType())) {
                     tvMyMessage.setVisibility(View.GONE);
                     ivMyImage.setVisibility(View.VISIBLE);
+                    llMyFile.setVisibility(View.GONE);
 
                     Glide.with(itemView.getContext())
                             .load(message.getFilePath())
@@ -183,6 +207,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 intent.putExtra("image_url", message.getFilePath());
                                 itemView.getContext().startActivity(intent);
                             });
+                } else if ("file".equals(message.getMessageType())) {
+                    tvMyMessage.setVisibility(View.GONE);
+                    ivMyImage.setVisibility(View.GONE);
+                    llMyFile.setVisibility(View.VISIBLE);
+                    String filePath = message.getFilePath();
+                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
+                    File file = new File(realPath);
+                    tvMyFileName.setText(file.getName());
+                    tvMyFileSize.setText(StorageHelper.formatFileSize(file.length()));
+
+                    llMyFile.setOnClickListener(v -> {
+                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
+                        intent.putExtra("id", message.getId());
+                        intent.putExtra("file_path", filePath);
+                        intent.putExtra("file_name", file.getName());
+                        intent.putExtra("file_size", file.length());
+                        intent.putExtra("is_me", true);
+                        intent.putExtra("content", message.getContent());
+                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
+                        intent.putExtra("contact_type", "user");
+                        itemView.getContext().startActivity(intent);
+                    });
                 }
             } else {
                 // 显示对方的消息
@@ -208,10 +254,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     tvOtherMessage.setVisibility(View.VISIBLE);
                     ivOtherImage.setVisibility(View.GONE);
                     tvOtherMessage.setText(message.getContent());
+                    llOtherFile.setVisibility(View.GONE);
                 } else if ("image".equals(message.getMessageType())) {
                     // 图片比例 已解决
                     tvOtherMessage.setVisibility(View.GONE);
                     ivOtherImage.setVisibility(View.VISIBLE);
+                    llOtherFile.setVisibility(View.GONE);
 //                    otherMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
 //                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
                     Glide.with(itemView.getContext())
@@ -256,6 +304,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 intent.putExtra("image_url", message.getFilePath());
                                 itemView.getContext().startActivity(intent);
                             });
+                } else if ("file".equals(message.getMessageType())) {
+                    tvOtherMessage.setVisibility(View.GONE);
+                    ivOtherImage.setVisibility(View.GONE);
+                    llOtherFile.setVisibility(View.VISIBLE);
+                    String filePath = message.getFilePath();
+                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
+                    File file = new File(realPath);
+                    tvOtherFileName.setText(file.getName());
+                    tvOtherFileSize.setText(StorageHelper.formatFileSize(file.length()));
+
+                    llOtherFile.setOnClickListener(v -> {
+                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
+                        intent.putExtra("id", message.getId());
+                        intent.putExtra("file_path", filePath);
+                        intent.putExtra("file_name", file.getName());
+                        intent.putExtra("file_size", file.length());
+                        intent.putExtra("is_me", false);
+                        intent.putExtra("content", message.getContent());
+                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
+                        intent.putExtra("contact_type", "user");
+                        itemView.getContext().startActivity(intent);
+                    });
                 }
             }
         }

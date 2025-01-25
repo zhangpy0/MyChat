@@ -1,6 +1,9 @@
 package top.zhangpy.mychat.data.remote.model;
 
 
+import lombok.Data;
+
+@Data
 public class ResultModel<T> {
 
     private Integer code;
@@ -50,31 +53,4 @@ public class ResultModel<T> {
         return build(data,code,message);
     }
 
-    public Integer getCode() {
-        return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public UserAccountModel getUserAccountModel() {
-        return null;
-    }
 }

@@ -40,7 +40,8 @@
                 android:textSize="16sp"
                 android:background="@drawable/chat_base_t"
                 android:textIsSelectable="true"
-                android:text="对方的消息"/>
+                android:text="对方的消息"
+                android:visibility="gone" />
 
             <!-- 图片消息 -->
             <ImageView
@@ -52,6 +53,50 @@
                 android:adjustViewBounds="true"
                 android:maxWidth="300dp"
                 android:maxHeight="300dp" />
+
+            <!-- 文件消息 -->
+            <LinearLayout
+                android:id="@+id/ll_other_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:paddingTop="8dp">
+
+                <!-- 文件信息左侧 -->
+                <LinearLayout
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <!-- 文件名 -->
+                    <TextView
+                        android:id="@+id/tv_other_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp"
+                        android:text="文件名" />
+
+                    <!-- 文件大小 -->
+                    <TextView
+                        android:id="@+id/tv_other_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp"
+                        android:text="文件大小: 2MB" />
+                </LinearLayout>
+
+                <!-- 文件图标 -->
+                <ImageView
+                    android:id="@+id/iv_other_file_icon"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/ic_file"
+                     />
+            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
@@ -105,6 +150,50 @@
                 android:adjustViewBounds="true"
                 android:maxWidth="300dp"
                 android:maxHeight="300dp" />
+
+            <!-- 文件消息 -->
+            <LinearLayout
+                android:id="@+id/ll_my_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:paddingTop="8dp">
+
+                <!-- 文件信息左侧 -->
+                <LinearLayout
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <!-- 文件名 -->
+                    <TextView
+                        android:id="@+id/tv_my_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp"
+                        android:text="文件名" />
+
+                    <!-- 文件大小 -->
+                    <TextView
+                        android:id="@+id/tv_my_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp"
+                        android:text="文件大小: 2MB" />
+                </LinearLayout>
+
+                <!-- 文件图标 -->
+                <ImageView
+                    android:id="@+id/iv_my_file_icon"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/ic_file"
+                    />
+            </LinearLayout>
 
         </LinearLayout>
     </RelativeLayout>

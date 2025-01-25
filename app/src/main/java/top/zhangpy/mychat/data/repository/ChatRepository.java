@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import okhttp3.MultipartBody;
@@ -93,6 +94,10 @@ public class ChatRepository {
     // 插入聊天消息
     public void insertMessage(String tableName, ChatMessage message) {
         chatDao.insertMessage(tableName, message);
+    }
+
+    public ChatMessage getMessageById(String tableName , int messageId) {
+        return chatDao.getMessageByID(tableName, messageId);
     }
 
     public void updateMessage(String tableName, ChatMessage message) {
@@ -357,8 +362,13 @@ public class ChatRepository {
         chatMessage.setIsRead(true);
         chatMessage.setIsDownload(true);
         String tableName = getTableName(friendId, userId);
-        insertMessage(tableName, chatMessage);
-        sendMessage(userId.toString(), friendId.toString(), "0", "user", content, messageType, token, path);
+        try {
+            sendMessage(userId.toString(), friendId.toString(), "0", "user", content, messageType, token, path);
+            insertMessage(tableName, chatMessage);
+        } catch (IOException e) {
+            Log.e("ChatRepository", "Failed to send message", e);
+            throw e;
+        }
         Friend friend = contactRepository.getFriendByFriendId(friendId);
         friend.setMessageTime(chatMessage.getSendTime());
         contactRepository.updateFriend(friend);
@@ -381,12 +391,20 @@ public class ChatRepository {
         sendMessage(userId.toString(), "0", groupId.toString(), "group", content, messageType, token, path);
     }
 
-    public List<MessageListItem> updateMessagesFromLocal(Integer userId, Integer friendId) {
+    public List<MessageListItem> updateMessagesFromLocal(Integer userId, Integer friendId, String token) throws IOException {
         String tableName = getTableName(friendId, userId);
         List<ChatMessage> messages = getMessages(tableName);
         List<MessageListItem> messageListItems = new ArrayList<>();
         for (ChatMessage message : messages) {
             MessageListItem messageListItem = new MessageListItem();
+            if (message.getMessageType().equals("file")) {
+                Map<String, String> fileInfo = getFileInfo(userId.toString(), String.valueOf(message.getFileId()), token);
+                messageListItem.setFileName(fileInfo.get("name"));
+                messageListItem.setFileSize(Long.parseLong(fileInfo.get("size")));
+            } else {
+                messageListItem.setFileName(null);
+                messageListItem.setFileSize(0L);
+            }
             messageListItem.setId(message.getMessageId());
             messageListItem.setContent(message.getContent());
             messageListItem.setMessageType(message.getMessageType());
@@ -401,5 +419,10 @@ public class ChatRepository {
     public void setAllMessagesRead(Integer userId, Integer friendId) {
         String tableName = getTableName(friendId, userId);
         chatDao.updateAllMessageRead(tableName);
+    }
+
+    public Map<String, String> getFileInfo(String userId, String messageId, String token) throws IOException {
+        ResultModel<Map<String, String>> res = chatService.getFileInfo(userId, messageId, token).execute().body();
+        return NetException.responseCheck(res);
     }
 }

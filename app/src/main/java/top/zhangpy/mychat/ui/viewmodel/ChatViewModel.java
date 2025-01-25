@@ -118,7 +118,12 @@ public class ChatViewModel extends AndroidViewModel {
 
     public void updateMessagesFromLocal(Integer friendId) {
         Integer userId = loadUserId();
-        List<MessageListItem> messageListItems = chatRepository.updateMessagesFromLocal(userId, friendId);
+        List<MessageListItem> messageListItems = null;
+        try {
+            messageListItems = chatRepository.updateMessagesFromLocal(userId, friendId, loadToken());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         messages.postValue(messageListItems);
     }
 

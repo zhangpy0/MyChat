@@ -28,8 +28,14 @@ public class PermissionUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // Android 14及以上
             return isManageStoragePermissionGranted();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11.0至Android 13
+            return (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(activity, Manifest.permission.MANAGE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    || Environment.isExternalStorageManager();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Android 6.0至Android 13
+            // Android 6.0至Android 11
             return ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                     && ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         } else {
@@ -47,25 +53,26 @@ public class PermissionUtils {
         return false;
     }
 
+    // TODO 优化
     // 请求存储权限（包括管理所有文件权限）
     public static void requestStoragePermission(Activity activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
             // Android 14 或更高版本，要求 MANAGE_EXTERNAL_STORAGE 权限
             if (!isManageStoragePermissionGranted()) {
                 requestManageStoragePermission(activity);
             } else {
                 // 如果已经有权限，则允许访问照片和视频
-                openFilePicker(activity);
+//                openFilePicker(activity);
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android 6.0 至 Android 13 请求传统的存储权限
             if (ContextCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(activity,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE},
                         PERMISSION_REQUEST_CODE);
             } else {
-                openFilePicker(activity);
+//                openFilePicker(activity);
             }
         }
     }
@@ -100,9 +107,11 @@ public class PermissionUtils {
         activity.startActivityForResult(intent, PERMISSION_REQUEST_CODE);
     }
 
+    // TODO 优化
     // 检查是否需要请求管理所有文件的权限（适用于 Android 14+）
     public static void checkForManageStoragePermission(Activity activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !isManageStoragePermissionGranted()) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !isManageStoragePermissionGranted()) {
+        if (true) {
             Toast.makeText(activity, "请授予应用管理所有文件的权限(打开应用设置)", Toast.LENGTH_LONG).show();
             requestStoragePermission(activity);
         } else {

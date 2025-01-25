@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- 顶部标题栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@android:color/white"
+        android:padding="16dp">
+
+        <!-- 返回按钮 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/back_img"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back"
+            app:tint="@android:color/black" />
+
+        <!-- 标题文字 -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="文件名"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
+    <!-- 文件类型图标 -->
+    <ImageView
+        android:id="@+id/iv_file_type_icon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="36dp"
+        android:src="@drawable/ic_file"
+        android:layout_gravity="center" />
+
+    <!-- 文件名 -->
+    <TextView
+        android:id="@+id/tv_file_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="文件名"
+        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal" />
+
+    <!-- 文件大小 -->
+    <TextView
+        android:id="@+id/tv_file_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="文件大小"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginTop="8dp"
+        android:layout_gravity="center_horizontal" />
+
+    <!-- 下载和打开按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="20dp">
+
+        <!-- 下载按钮 -->
+        <Button
+            android:id="@+id/btn_download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="下载"
+            android:layout_marginEnd="16dp" />
+
+        <!-- 打开按钮 -->
+        <Button
+            android:id="@+id/btn_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打开" />
+    </LinearLayout>
+
+    <!-- 下载进度条 -->
+    <LinearLayout
+        android:id="@+id/ll_download_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal">
+
+        <!-- 进度条 -->
+        <ProgressBar
+            android:id="@+id/pb_download_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="0"
+            android:visibility="visible" />
+
+        <!-- 下载速度和已下载大小 -->
+        <TextView
+            android:id="@+id/tv_download_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="下载速度: 0KB/s | 已下载: 0MB"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,6 +30,7 @@ import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.adapter.MessageAdapter;
 import top.zhangpy.mychat.ui.viewmodel.ChatViewModel;
 import top.zhangpy.mychat.util.HideKeyboard;
+import top.zhangpy.mychat.util.StorageHelper;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -37,7 +39,7 @@ public class ChatActivity extends AppCompatActivity {
     private ChatViewModel viewModel;
 
     private ActivityResultLauncher<Intent> imagePreviewLauncher;
-
+    private ActivityResultLauncher<Intent> filePickerLauncher;
 
     private EditText inputMessage;
 
@@ -45,6 +47,8 @@ public class ChatActivity extends AppCompatActivity {
     private Button sendButton;
 
     private Button selectPhotoButton;
+
+    private Button selectFileButton;
 
     private LinearLayout moreLayout;
 
@@ -105,6 +109,7 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.btn_send);
         moreLayout = findViewById(R.id.layout_more_options);
         selectPhotoButton = findViewById(R.id.btn_select_photo);
+        selectFileButton = findViewById(R.id.btn_select_file);
         contactName = findViewById(R.id.tv_contact_name);
         btnBack = findViewById(R.id.btn_back);
         contactInfo = findViewById(R.id.btn_contact_details);
@@ -171,6 +176,28 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void setBind(Integer contactId) {
+
+        // 注册文件选择器的 ActivityResultLauncher
+        filePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectFileUri = result.getData().getData();
+                        if (selectFileUri != null) {
+                            // 获取文件路径
+                            String filePath = StorageHelper.getRealPathFromURI(this, String.valueOf(selectFileUri));
+                            if (filePath != null) {
+                                viewModel.sendMessageToFriend(contactId, "", "file", filePath);
+                            } else {
+                                Toast.makeText(this, "无法获取文件路径", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, "未选择文件", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
         // 监听ViewModel中的数据变化
         viewModel.getMessages().observe(this, messages -> {
             adapter.getMessages().clear();
@@ -204,6 +231,14 @@ public class ChatActivity extends AppCompatActivity {
             Intent intent = new Intent(ChatActivity.this, ImagePreviewActivity.class);
             intent.putExtra("contact_id", contactId); // 传递 contactId
             imagePreviewLauncher.launch(intent);
+        });
+
+        selectFileButton.setOnClickListener(v -> {
+            // TODO
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*"); // 设置为所有类型的文件
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            filePickerLauncher.launch(Intent.createChooser(intent, "选择要发送文件"));
         });
 
         contactInfo.setOnClickListener(v -> {

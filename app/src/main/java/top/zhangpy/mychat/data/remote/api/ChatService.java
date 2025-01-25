@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.data.remote.api;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
@@ -68,6 +69,13 @@ public interface ChatService {
     @Streaming
     @POST("chat/download")
     Call<ResponseBody> downloadFile(
+            @Query("userId") String userId,
+            @Query("messageId") String messageId,
+            @Header("token") String token
+    );
+
+    @POST("chat/fileInfo")
+    Call<ResultModel<Map<String, String>>> getFileInfo(
             @Query("userId") String userId,
             @Query("messageId") String messageId,
             @Header("token") String token
