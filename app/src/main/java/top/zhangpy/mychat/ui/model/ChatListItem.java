@@ -26,6 +26,19 @@ public class ChatListItem {
         }
     }
 
+    public void resetContent(String messageType) {
+        if (content == null) {
+            this.content = "";
+        }
+        if (messageType.equals("image")) {
+            this.content = "[图片]";
+        } else if (messageType.equals("file")) {
+            this.content = "[文件]";
+        } else if (content.length() > 16) {
+            this.content = content.substring(0, 16) + "...";
+        }
+    }
+
     public void setTime(Timestamp sendTime) {
         if (sendTime == null) {
             this.time = "";

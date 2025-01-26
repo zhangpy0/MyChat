@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StorageHelper {
     private static final String BASE_DIRECTORY = "MyChat_files";
@@ -122,8 +124,8 @@ public class StorageHelper {
 
             // 使用正则匹配 "(数字)" 后缀
             String pattern = "^(.*)\\((\\d+)\\)$";
-            java.util.regex.Pattern regex = java.util.regex.Pattern.compile(pattern);
-            java.util.regex.Matcher matcher = regex.matcher(baseName);
+            Pattern regex = java.util.regex.Pattern.compile(pattern);
+            Matcher matcher = regex.matcher(baseName);
 
             int number = 1;
             if (matcher.matches()) {

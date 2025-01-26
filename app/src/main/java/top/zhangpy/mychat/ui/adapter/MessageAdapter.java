@@ -214,8 +214,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     String filePath = message.getFilePath();
                     String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
                     File file = new File(realPath);
-                    tvMyFileName.setText(file.getName());
-                    tvMyFileSize.setText(StorageHelper.formatFileSize(file.length()));
+                    tvMyFileName.setText(message.getFileName());
+                    tvMyFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
 
                     llMyFile.setOnClickListener(v -> {
                         Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
@@ -311,8 +311,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     String filePath = message.getFilePath();
                     String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
                     File file = new File(realPath);
-                    tvOtherFileName.setText(file.getName());
-                    tvOtherFileSize.setText(StorageHelper.formatFileSize(file.length()));
+                    tvOtherFileName.setText(message.getFileName());
+                    tvOtherFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
 
                     llOtherFile.setOnClickListener(v -> {
                         Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);

@@ -286,7 +286,7 @@ public class ChatRepository {
                 chatListItem.setTime(friend.getMessageTime());
                 chatListItem.setUnreadCount(chatDao.getUnreadCount(getTableName(friend.getFriendId(), friend.getUserId())));
                 chatListItem.setAvatarPath(friendProfile.getAvatarPath());
-                chatListItem.resetContent();
+                chatListItem.resetContent(message.getMessageType());
                 chatListItem.setAbsTime(friend.getMessageTime().getTime());
                 chatListItemSet.add(chatListItem);
             } else {
@@ -323,7 +323,7 @@ public class ChatRepository {
                 chatListItem.setAbsTime(group.getMessageTime().getTime());
                 chatListItem.setUnreadCount(chatDao.getUnreadCount(getTableName(group.getGroupId())));
                 chatListItem.setAvatarPath(groupInfo.getAvatarPath());
-                chatListItem.resetContent();
+                chatListItem.resetContent(message.getMessageType());
                 chatListItemSet.add(chatListItem);
             } else {
                 ChatListItem chatListItem = new ChatListItem();
@@ -364,6 +364,12 @@ public class ChatRepository {
         String tableName = getTableName(friendId, userId);
         try {
             sendMessage(userId.toString(), friendId.toString(), "0", "user", content, messageType, token, path);
+            if (messageType.equals("file")) {
+                content = content + ":" + new File(path).length();
+                chatMessage.setContent(content);
+                String fileName = new File(path).getName();
+                chatMessage.setFileName(fileName);
+            }
             insertMessage(tableName, chatMessage);
         } catch (IOException e) {
             Log.e("ChatRepository", "Failed to send message", e);
@@ -398,9 +404,11 @@ public class ChatRepository {
         for (ChatMessage message : messages) {
             MessageListItem messageListItem = new MessageListItem();
             if (message.getMessageType().equals("file")) {
-                Map<String, String> fileInfo = getFileInfo(userId.toString(), String.valueOf(message.getFileId()), token);
-                messageListItem.setFileName(fileInfo.get("name"));
-                messageListItem.setFileSize(Long.parseLong(fileInfo.get("size")));
+                messageListItem.setFileName(message.getFileName());
+                String content = message.getContent();
+                String[] split = content.split(":");
+                Long fileSize = Long.parseLong(split[split.length - 1]);
+                messageListItem.setFileSize(fileSize);
             } else {
                 messageListItem.setFileName(null);
                 messageListItem.setFileSize(0L);

@@ -102,6 +102,27 @@ public class ChatActivity extends AppCompatActivity {
                 }
         );
 
+        // 注册文件选择器的 ActivityResultLauncher
+        filePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectFileUri = result.getData().getData();
+                        if (selectFileUri != null) {
+                            // 获取文件路径
+                            String filePath = StorageHelper.getRealPathFromURI(this, String.valueOf(selectFileUri));
+                            if (filePath != null) {
+                                viewModel.sendMessageToFriend(contactId, "", "file", filePath);
+                            } else {
+                                Toast.makeText(this, "无法获取文件路径", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, "未选择文件", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
         // 初始化视图
         recyclerView = findViewById(R.id.rv_messages);
         inputMessage = findViewById(R.id.et_message_input);
@@ -176,27 +197,6 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void setBind(Integer contactId) {
-
-        // 注册文件选择器的 ActivityResultLauncher
-        filePickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri selectFileUri = result.getData().getData();
-                        if (selectFileUri != null) {
-                            // 获取文件路径
-                            String filePath = StorageHelper.getRealPathFromURI(this, String.valueOf(selectFileUri));
-                            if (filePath != null) {
-                                viewModel.sendMessageToFriend(contactId, "", "file", filePath);
-                            } else {
-                                Toast.makeText(this, "无法获取文件路径", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } else {
-                        Toast.makeText(this, "未选择文件", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
 
         // 监听ViewModel中的数据变化
         viewModel.getMessages().observe(this, messages -> {

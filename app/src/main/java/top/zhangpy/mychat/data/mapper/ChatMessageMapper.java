@@ -26,7 +26,12 @@ public class ChatMessageMapper {
             String content = chatMessageModel.getContent();
             String[] split = content.split(":");
             chatMessage.setFileId(Integer.parseInt(split[0]));
-            chatMessage.setFileName(split[1]);
+            Long fileSize = Long.parseLong(split[split.length - 1]);
+            StringBuilder fileName = new StringBuilder();
+            for (int i = 1; i < split.length - 1; i++) {
+                fileName.append(split[i]);
+            }
+            chatMessage.setFileName(fileName.toString());
         }
 
         chatMessage.setIsRead(false);
