@@ -23,11 +23,11 @@ import top.zhangpy.mychat.ui.model.MessageListItem;
 
 public class ChatViewModel extends AndroidViewModel {
 
-    private ChatRepository chatRepository;
+    private final ChatRepository chatRepository;
 
     private ContactRepository contactRepository;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Getter
     private MutableLiveData<List<MessageListItem>> messages = new MutableLiveData<>();

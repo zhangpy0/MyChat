@@ -74,31 +74,26 @@ public class StorageHelper {
      * @return 文件路径
      */
     public static String saveFile(Context context, String directoryType, String id1, String id2, String fileName, InputStream inputStream) {
-        File targetDir;
+        File targetDir = switch (directoryType) {
+            case "user" -> getUserAvatarDirectory(context, id1);
+            case "group" -> getGroupAvatarDirectory(context, id1);
+            case "chat" -> {
+                if (id2 == null) {
+                    throw new IllegalArgumentException("Sender ID is required for chat files.");
+                }
+                yield getChatFileDirectory(context, id1, id2);
+            }
+            case "chat_group" -> {
+                if (id2 == null) {
+                    throw new IllegalArgumentException("Sender ID is required for chat files.");
+                }
+                yield getChatGroupFileDirectory(context, id1, id2);
+            }
+            default ->
+                    throw new IllegalArgumentException("Invalid directory type: " + directoryType);
+        };
 
         // 根据类型获取目录
-        switch (directoryType) {
-            case "user":
-                targetDir = getUserAvatarDirectory(context, id1);
-                break;
-            case "group":
-                targetDir = getGroupAvatarDirectory(context, id1);
-                break;
-            case "chat":
-                if (id2 == null) {
-                    throw new IllegalArgumentException("Sender ID is required for chat files.");
-                }
-                targetDir = getChatFileDirectory(context, id1, id2);
-                break;
-            case "chat_group":
-                if (id2 == null) {
-                    throw new IllegalArgumentException("Sender ID is required for chat files.");
-                }
-                targetDir = getChatGroupFileDirectory(context, id1, id2);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid directory type: " + directoryType);
-        }
 
         // 创建目标文件
         File targetFile = new File(targetDir, fileName);
