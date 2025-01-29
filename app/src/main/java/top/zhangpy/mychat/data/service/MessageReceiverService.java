@@ -13,7 +13,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -28,6 +27,7 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import top.zhangpy.mychat.R;
+import top.zhangpy.mychat.util.Logger;
 
 public class MessageReceiverService extends Service {
     private static final String CHANNEL_ID = "MessageServiceChannel";
@@ -39,7 +39,7 @@ public class MessageReceiverService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if ("top.zhangpy.mychat.MESSAGE_HANDLER_SERVICE_STOPPED".equals(intent.getAction())) {
-                Log.i("MessageReceiverService", "MessageHandlerService stopped, restarting...");
+                Logger.i("MessageReceiverService", "MessageHandlerService stopped, restarting...");
                 restartMessageHandlerService();
             }
         }
@@ -48,6 +48,10 @@ public class MessageReceiverService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         createNotificationChannel();
         startForeground(1, getNotification("Connecting to server..."));
 
@@ -61,7 +65,7 @@ public class MessageReceiverService extends Service {
     private void connectWebSocket() {
         String token = loadToken();
         if (token == null) {
-            Log.e("MessageReceiverService", "No token found");
+            Logger.e("MessageReceiverService", "No token found");
             stopSelf(); // 没有 token，停止服务
             return;
         }
@@ -70,7 +74,7 @@ public class MessageReceiverService extends Service {
                 .pingInterval(5, java.util.concurrent.TimeUnit.SECONDS) // 心跳间隔
                 .addInterceptor(chain -> {
                     Request request = chain.request();
-                    Log.d("OkHttp", "Request: " + request.headers());
+                    Logger.d("OkHttp", "Request: " + request.headers());
                     return chain.proceed(request);
                 })
                 .build();
@@ -86,14 +90,14 @@ public class MessageReceiverService extends Service {
             public void onOpen(WebSocket webSocket, Response response) {
                 super.onOpen(webSocket, response);
                 updateNotification("Connected to server");
-                Log.i("MessageReceiverService", "Connected to server");
+                Logger.i("MessageReceiverService", "Connected to server");
                 sendHeartbeat();
             }
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
                 super.onMessage(webSocket, text);
-                Log.i("MessageReceiverService", "Received message: " + text);
+                Logger.i("MessageReceiverService", "Received message: " + text);
                 webSocket.send("get");
                 new Handler(getMainLooper()).post(() -> broadcastMessage(text));
             }
@@ -101,14 +105,14 @@ public class MessageReceiverService extends Service {
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
-                Log.e("MessageReceiverService", "WebSocket failure: " + t.getMessage());
+                Logger.e("MessageReceiverService", "WebSocket failure: " + t.getMessage());
                 reconnectWebSocket();
             }
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
                 super.onClosed(webSocket, code, reason);
-                Log.i("MessageReceiverService", "WebSocket closed: " + reason);
+                Logger.i("MessageReceiverService", "WebSocket closed: " + reason);
                 reconnectWebSocket();
             }
         });
@@ -122,22 +126,22 @@ public class MessageReceiverService extends Service {
             if (webSocket != null) {
                 try {
                     webSocket.send("heartbeat");
-                    Log.i("MessageReceiverService", "Sent heartbeat");
+                    Logger.i("MessageReceiverService", "Sent heartbeat");
                 } catch (Exception e) {
-                    Log.e("MessageReceiverService", "Heartbeat failed: " + e.getMessage());
+                    Logger.e("MessageReceiverService", "Heartbeat failed: " + e.getMessage());
                 }
             }
         }, 0, 5, TimeUnit.SECONDS); // 每5秒发送一次
     }
 
     private void reconnectWebSocket() {
-        Log.i("MessageReceiverService", "Reconnecting to server...");
+        Logger.i("MessageReceiverService", "Reconnecting to server...");
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 Thread.sleep(3000); // 延迟重连
                 connectWebSocket();
             } catch (InterruptedException e) {
-                Log.e("MessageReceiverService", "Reconnect interrupted");
+                Logger.e("MessageReceiverService", "Reconnect interrupted");
             }
         });
     }
@@ -145,7 +149,7 @@ public class MessageReceiverService extends Service {
     private void broadcastMessage(String message) {
         Intent intent = new Intent("top.zhangpy.mychat.MESSAGE_RECEIVED");
         intent.putExtra("message", message);
-        Log.i("MessageReceiverService", "Broadcasting message: " + message);
+        Logger.i("MessageReceiverService", "Broadcasting message: " + message);
         sendBroadcast(intent);
     }
 

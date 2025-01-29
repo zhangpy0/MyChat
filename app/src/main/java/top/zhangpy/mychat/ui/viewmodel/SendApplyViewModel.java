@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.lifecycle.AndroidViewModel;
 
@@ -12,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.ContactRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class SendApplyViewModel extends AndroidViewModel {
 
@@ -20,6 +20,8 @@ public class SendApplyViewModel extends AndroidViewModel {
     public SendApplyViewModel(Application application) {
         super(application);
         contactRepository = new ContactRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public void sendApply(int friendId, String content) {
@@ -40,10 +42,10 @@ public class SendApplyViewModel extends AndroidViewModel {
                 requestMapModel.setMessage(content);
                 boolean isSend = contactRepository.sendFriendRequest(token, requestMapModel);
                 if (!isSend) {
-                    Log.e("SendApplyViewModel", "sendApply: 发送好友请求失败");
+                    Logger.e("SendApplyViewModel", "sendApply: 发送好友请求失败");
                 }
             } catch (IOException e) {
-                Log.e("SendApplyViewModel", "sendApply: ", e);
+                Logger.e("SendApplyViewModel", "sendApply: ", e);
             }
         });
     }

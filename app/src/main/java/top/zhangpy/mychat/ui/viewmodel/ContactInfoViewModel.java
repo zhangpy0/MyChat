@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -22,6 +21,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
 import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class ContactInfoViewModel extends AndroidViewModel {
 
@@ -53,6 +53,8 @@ public class ContactInfoViewModel extends AndroidViewModel {
         super(application);
         userRepository = new UserRepository(application);
         contactRepository = new ContactRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     // Server -> sqlite -> UI
@@ -80,7 +82,7 @@ public class ContactInfoViewModel extends AndroidViewModel {
                         if (oldAvatarFiles != null) {
                             for (File oldAvatarFile : oldAvatarFiles) {
                                 if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
-                                    Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                                    Logger.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
                                 }
                             }
                         }
@@ -97,10 +99,10 @@ public class ContactInfoViewModel extends AndroidViewModel {
                     region.postValue(userProfile.getRegion());
                     updateResult.postValue(true);
                 } else {
-                    Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: user profile not match");
+                    Logger.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: user profile not match");
                 }
             } catch (IOException e) {
-                Log.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
+                Logger.e("ContactInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
             }
         });
     }
@@ -115,7 +117,7 @@ public class ContactInfoViewModel extends AndroidViewModel {
                 isFriend.postValue(is);
                 updateResultIsFriend.postValue(true);
             } catch (IOException e) {
-                Log.e("ContactInfoViewModel", "isMyFriend: ", e);
+                Logger.e("ContactInfoViewModel", "isMyFriend: ", e);
             }
         });
         return isMyFriend.get();

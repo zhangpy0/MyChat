@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -19,6 +18,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.ui.model.ApplyListItem;
+import top.zhangpy.mychat.util.Logger;
 
 public class AddFriendViewModel extends AndroidViewModel {
 
@@ -36,6 +36,9 @@ public class AddFriendViewModel extends AndroidViewModel {
         super(application);
         contactRepository = new ContactRepository(application);
         userRepository = new UserRepository(application);
+
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public void updateApplyListFromServer() {
@@ -47,7 +50,7 @@ public class AddFriendViewModel extends AndroidViewModel {
             try {
                 applies.set(contactRepository.getApplyListFromServer(token, userId, getApplication()));
             } catch (Exception e) {
-                Log.e("AddFriendViewModel", "updateApplyListFromServer: ", e);
+                Logger.e("AddFriendViewModel", "updateApplyListFromServer: ", e);
             }
             this.applyList.postValue(applies.get());
         });
@@ -67,7 +70,7 @@ public class AddFriendViewModel extends AndroidViewModel {
 
                 updateStatus.postValue(applyId);
             } catch (Exception e) {
-                Log.e("AddFriendViewModel", "acceptApply: ", e);
+                Logger.e("AddFriendViewModel", "acceptApply: ", e);
             }
         });
     }
@@ -87,7 +90,7 @@ public class AddFriendViewModel extends AndroidViewModel {
 
                 updateStatus.postValue(applyId);
             } catch (Exception e) {
-                Log.e("AddFriendViewModel", "acceptApply: ", e);
+                Logger.e("AddFriendViewModel", "acceptApply: ", e);
             }
         });
     }

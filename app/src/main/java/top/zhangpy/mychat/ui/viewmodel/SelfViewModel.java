@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -19,6 +18,7 @@ import top.zhangpy.mychat.data.mapper.UserProfileMapper;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class SelfViewModel extends AndroidViewModel {
 
@@ -32,6 +32,8 @@ public class SelfViewModel extends AndroidViewModel {
     public SelfViewModel(@NonNull Application application) {
         super(application);
         userRepository = new UserRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public LiveData<String> getNickname() {
@@ -72,7 +74,7 @@ public class SelfViewModel extends AndroidViewModel {
                     if (oldAvatarFiles != null) {
                         for (File oldAvatarFile : oldAvatarFiles) {
                             if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
-                                Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                                Logger.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
                             }
                         }
                     }
@@ -83,10 +85,10 @@ public class SelfViewModel extends AndroidViewModel {
                 if (userProfile != null) {
                     updateUserInfo(userProfile.getNickname(), String.valueOf(userProfile.getUserId()), userProfile.getAvatarPath());
                 } else {
-                    Log.e("SelfViewModel", "updateSelfInfoFromLocalAndServer: user profile not match");
+                    Logger.e("SelfViewModel", "updateSelfInfoFromLocalAndServer: user profile not match");
                 }
             } catch (IOException e) {
-                Log.e("SelfViewModel", "updateSelfInfoFromLocalAndServer: ", e);
+                Logger.e("SelfViewModel", "updateSelfInfoFromLocalAndServer: ", e);
             }
         });
     }

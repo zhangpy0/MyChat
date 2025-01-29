@@ -39,15 +39,37 @@
         android:layout_height="4dp"
         android:background="@color/title" />
 
-    <!-- 退出登录 -->
     <LinearLayout
-        android:id="@+id/ll_logout"
+        android:id="@+id/ll_check_log"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:orientation="horizontal"
         android:background="@android:color/background_light"
         android:padding="16dp"
+        android:clickable="true"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/tv_check_log"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="查看(分享)日志"
+            android:textSize="24sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <!-- 退出登录 -->
+    <LinearLayout
+        android:id="@+id/ll_logout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:background="@android:color/background_light"
+        android:padding="16dp"
+        android:clickable="true"
         android:gravity="center">
 
         <TextView

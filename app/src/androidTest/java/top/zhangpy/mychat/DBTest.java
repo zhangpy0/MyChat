@@ -51,8 +51,8 @@ public class DBTest {
     public void setUp() {
         Context context = ApplicationProvider.getApplicationContext();
         this.context = context;
-        Log.d("DBTest", context.getDatabasePath("main_database").toString());
-        Log.d("DBTest", context.getFilesDir().getAbsolutePath());
+        Logger.d("DBTest", context.getDatabasePath("main_database").toString());
+        Logger.d("DBTest", context.getFilesDir().getAbsolutePath());
         userRepository = new UserRepository(context);
 
         chatRepository = new ChatRepository(context);
@@ -77,19 +77,19 @@ public class DBTest {
 
         List<User> users = userRepository.getAllUsers();
         if (!users.isEmpty()) {
-            Log.d("DBTest", users.toString());
+            Logger.d("DBTest", users.toString());
         }
 
         UserAccountModel userAccountModel = userRepository.login(requestMapModel);
-        Log.d("DBTest", userAccountModel.toString());
+        Logger.d("DBTest", userAccountModel.toString());
 
 
         User user = UserAccountMapper.mapToUser(userAccountModel);
 
         userRepository.insertUser(user);
-        Log.d("DBTest", users.toString());
+        Logger.d("DBTest", users.toString());
         users = userRepository.getAllUsers();
-        Log.d("DBTest", users.toString());
+        Logger.d("DBTest", users.toString());
 
         String token = user.getToken();
         saveToken(token);
@@ -97,15 +97,15 @@ public class DBTest {
         requestMapModel.setFriendId(String.valueOf(userId));
 
         UserProfileModel userProfileModel = userRepository.getUserProfile(token, requestMapModel);
-        Log.d("DBTest", userProfileModel.toString());
+        Logger.d("DBTest", userProfileModel.toString());
         UserProfile userProfile = UserProfileMapper.mapToUserProfile(userProfileModel, context);
         userRepository.insertUserProfile(userProfile);
         UserProfile userProfile1 = userRepository.getUserProfileById(userId);
-        Log.d("DBTest", userProfile1.toString());
+        Logger.d("DBTest", userProfile1.toString());
         userProfile1.setNickname("丁真");
         userRepository.updateUserProfile(userProfile1);
         userProfile1 = userRepository.getUserProfileById(userId);
-        Log.d("DBTest", userProfile1.toString());
+        Logger.d("DBTest", userProfile1.toString());
         userRepository.deleteUserProfile(userProfile1);
         userProfile1 = userRepository.getUserProfileById(userId);
         assert userProfile1 == null;
@@ -125,7 +125,7 @@ public class DBTest {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String message = intent.getStringExtra("message");
-                Log.d("DBTest", "Received broadcast message: " + message);
+                Logger.d("DBTest", "Received broadcast message: " + message);
                 latch.countDown(); // 收到消息后结束等待
             }
         };
@@ -134,7 +134,7 @@ public class DBTest {
 
         try {
             if (!latch.await(100, TimeUnit.SECONDS)) {
-                Log.e("DBTest", "Timeout waiting for service message");
+                Logger.e("DBTest", "Timeout waiting for service message");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -144,7 +144,7 @@ public class DBTest {
         context.unregisterReceiver(receiver);
         context.stopService(serviceIntent);
 
-        Log.d("DBTest", "Test completed");
+        Logger.d("DBTest", "Test completed");
     }
     private void saveToken(String token) {
         SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
@@ -164,7 +164,7 @@ public class DBTest {
         final String[] token = {null};
 
         UserAccountModel userAccountModel = userRepository.login(requestMapModel);
-        Log.d("DBTest", userAccountModel.toString());
+        Logger.d("DBTest", userAccountModel.toString());
         User user = UserAccountMapper.mapToUser(userAccountModel);
         userRepository.insertUser(user);
         token[0] = user.getToken();
@@ -177,43 +177,43 @@ public class DBTest {
         ServerMessageModel model1 = ServerMessageMapper.mapToServerMessageModel(message1);
         ServerMessageModel model2 = ServerMessageMapper.mapToServerMessageModel(message2);
 
-        Log.d("DBTest", model1.toString());
-        Log.d("DBTest", model2.toString());
+        Logger.d("DBTest", model1.toString());
+        Logger.d("DBTest", model2.toString());
 
         boolean isServerMessage1 = ServerMessageMapper.isServerMessage(model1);
         boolean isServerMessage2 = ServerMessageMapper.isServerMessage(model2);
         ChatMessageModel chatMessageModel = null;
         if (isServerMessage1) {
-            Log.d("DBTest", "Message 1 is a server message");
+            Logger.d("DBTest", "Message 1 is a server message");
         } else {
-            Log.d("DBTest", "Message 1 is not a server message");
+            Logger.d("DBTest", "Message 1 is not a server message");
             chatMessageModel = ServerMessageMapper.mapToChatMessageModel(model1);
         }
         if (isServerMessage2) {
-            Log.d("DBTest", "Message 2 is a server message");
+            Logger.d("DBTest", "Message 2 is a server message");
         } else {
-            Log.d("DBTest", "Message 2 is not a server message");
+            Logger.d("DBTest", "Message 2 is not a server message");
         }
 
         assert chatMessageModel != null;
         ChatMessage chatMessage = ChatMessageMapper.mapToChatMessage(chatMessageModel);
-        Log.d("DBTest", chatMessage.toString());
+        Logger.d("DBTest", chatMessage.toString());
 
         chatRepository.createChatTable(ChatRepository.getTableName(chatMessage));
-        Log.d("DBTest", "Table created : " + ChatRepository.getTableName(chatMessage));
+        Logger.d("DBTest", "Table created : " + ChatRepository.getTableName(chatMessage));
         chatRepository.insertMessage(ChatRepository.getTableName(chatMessage), chatMessage);
         List<ChatMessage> messages = chatRepository.getMessages(ChatRepository.getTableName(chatMessage));
-        Log.d("DBTest", messages.toString());
+        Logger.d("DBTest", messages.toString());
 
         chatMessage = messages.get(0);
 
         String path = chatRepository.downloadFile(context, String.valueOf(userId), token[0], chatMessage);
-        Log.d("DBTest", "File downloaded to: " + path);
+        Logger.d("DBTest", "File downloaded to: " + path);
 
         messages = chatRepository.getMessages(ChatRepository.getTableName(chatMessage));
-        Log.d("DBTest", messages.toString());
+        Logger.d("DBTest", messages.toString());
         path = chatRepository.downloadFile(context, String.valueOf(userId), token[0], chatMessage);
-        Log.d("DBTest", "File downloaded to: " + path);
-        Log.d("DBTest", "Test completed");
+        Logger.d("DBTest", "File downloaded to: " + path);
+        Logger.d("DBTest", "Test completed");
     }
 }

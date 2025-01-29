@@ -13,7 +13,7 @@ public class HashGenerator {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            Log.e("HashGenerator", "SHA-256 algorithm not found");
+            Logger.e("HashGenerator", "SHA-256 algorithm not found");
         }
     }
 

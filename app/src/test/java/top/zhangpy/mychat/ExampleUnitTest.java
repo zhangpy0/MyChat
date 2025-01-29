@@ -279,22 +279,22 @@ public class ExampleUnitTest {
         ServerMessageModel model1 = ServerMessageMapper.mapToServerMessageModel(message1);
         ServerMessageModel model2 = ServerMessageMapper.mapToServerMessageModel(message2);
 
-        Log.d("DBTest", model1.toString());
-        Log.d("DBTest", model2.toString());
+        Logger.d("DBTest", model1.toString());
+        Logger.d("DBTest", model2.toString());
 
         boolean isServerMessage1 = ServerMessageMapper.isServerMessage(model1);
         boolean isServerMessage2 = ServerMessageMapper.isServerMessage(model2);
         ChatMessageModel chatMessageModel;
         if (isServerMessage1) {
-            Log.d("DBTest", "Message 1 is a server message");
+            Logger.d("DBTest", "Message 1 is a server message");
         } else {
-            Log.d("DBTest", "Message 1 is not a server message");
+            Logger.d("DBTest", "Message 1 is not a server message");
             chatMessageModel = ServerMessageMapper.mapToChatMessageModel(model1);
         }
         if (isServerMessage2) {
-            Log.d("DBTest", "Message 2 is a server message");
+            Logger.d("DBTest", "Message 2 is a server message");
         } else {
-            Log.d("DBTest", "Message 2 is not a server message");
+            Logger.d("DBTest", "Message 2 is not a server message");
         }
     }
 

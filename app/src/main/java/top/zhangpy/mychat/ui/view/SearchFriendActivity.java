@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -14,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import top.zhangpy.mychat.R;
+import top.zhangpy.mychat.util.Logger;
 
 public class SearchFriendActivity extends AppCompatActivity {
 
@@ -28,6 +28,9 @@ public class SearchFriendActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_friend);
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
 
         // 初始化组件
         searchHint = findViewById(R.id.search_edit_text);
@@ -74,7 +77,7 @@ public class SearchFriendActivity extends AppCompatActivity {
             try {
                 contactId = Integer.parseInt(text);
             } catch (NumberFormatException e) {
-                Log.e("SearchFriendActivity", "NumberFormatException: " + e.getMessage());
+                Logger.e("SearchFriendActivity", "NumberFormatException: " + e.getMessage());
                 isNumber = false;
                 Toast.makeText(SearchFriendActivity.this, "请输入正确的用户ID", Toast.LENGTH_SHORT).show();
             }

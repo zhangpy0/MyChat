@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -22,6 +21,7 @@ import top.zhangpy.mychat.data.mapper.UserProfileMapper;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class PersonalInfoViewModel extends AndroidViewModel {
@@ -48,6 +48,8 @@ public class PersonalInfoViewModel extends AndroidViewModel {
     public PersonalInfoViewModel(@NonNull Application application) {
         super(application);
         userRepository = new UserRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public LiveData<String> getAvatar() {
@@ -124,7 +126,7 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                     if (oldAvatarFiles != null) {
                         for (File oldAvatarFile : oldAvatarFiles) {
                             if (oldAvatarFile.exists() && !oldAvatarFile.delete()) {
-                                Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
+                                Logger.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: delete old avatar failed");
                             }
                         }
                     }
@@ -139,10 +141,10 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                     updateRegion(userProfile.getRegion());
                     updateAccount(String.valueOf(userId));
                 } else {
-                    Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: user profile not match");
+                    Logger.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: user profile not match");
                 }
             } catch (IOException e) {
-                Log.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
+                Logger.e("PersonalInfoViewModel", "updateUserInfoFromLocalAndServer: ", e);
             }
         });
     }
@@ -163,7 +165,7 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 userRepository.updateUserProfile(userProfile);
                 updateResult.postValue(true);
             } catch (Exception e) {
-                Log.e("PersonalInfoViewModel", "updateToLocalAndServer: ", e);
+                Logger.e("PersonalInfoViewModel", "updateToLocalAndServer: ", e);
             }
         });
     }
@@ -183,12 +185,12 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 String random = String.valueOf(System.currentTimeMillis()).substring(7);
                 File newAvatar = new File(newAvatarDir, userId + "_avatar_" + random + ".jpg");
                 if (newAvatar.exists() && !newAvatar.delete()) {
-                    Log.e("PersonalInfoViewModel", "updateUserAvatar: delete old avatar failed");
+                    Logger.e("PersonalInfoViewModel", "updateUserAvatar: delete old avatar failed");
                     return;
                 }
                 File cachedAvatar = new File(newAvatarPath);
                 if (!newAvatarDir.exists() && !newAvatarDir.mkdirs()) {
-                    Log.e("PersonalInfoViewModel", "updateUserAvatar: create new avatar directory failed");
+                    Logger.e("PersonalInfoViewModel", "updateUserAvatar: create new avatar directory failed");
                     return;
                 }
                 if (cachedAvatar.exists()) {
@@ -199,9 +201,9 @@ public class PersonalInfoViewModel extends AndroidViewModel {
                 userRepository.updateUserAvatar(token, String.valueOf(userId), newAvatar.getAbsolutePath());
                 newPath.set(newAvatar.getAbsolutePath());
                 updateResult.postValue(true);
-                Log.d("PersonalInfoViewModel", "updateUserAvatar: success");
+                Logger.d("PersonalInfoViewModel", "updateUserAvatar: success");
             } catch (Exception e) {
-                Log.e("PersonalInfoViewModel", "updateUserAvatar: ", e);
+                Logger.e("PersonalInfoViewModel", "updateUserAvatar: ", e);
             }
         });
         return newPath.get();

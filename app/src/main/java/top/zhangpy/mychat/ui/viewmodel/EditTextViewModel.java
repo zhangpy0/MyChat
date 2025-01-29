@@ -4,7 +4,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -17,6 +16,7 @@ import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class EditTextViewModel extends AndroidViewModel {
 
@@ -34,6 +34,8 @@ public class EditTextViewModel extends AndroidViewModel {
     public EditTextViewModel(@NonNull Application application) {
         super(application);
         this.userRepository = new UserRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public LiveData<String> getText() {
@@ -71,7 +73,7 @@ public class EditTextViewModel extends AndroidViewModel {
                     text.postValue(userRepository.getUserProfileById(userId).getRegion());
                 }
             } catch (Exception e) {
-                Log.e("EditTextViewModel", "initText: ", e);
+                Logger.e("EditTextViewModel", "initText: ", e);
             }
         });
     }
@@ -108,9 +110,9 @@ public class EditTextViewModel extends AndroidViewModel {
                     userRepository.updateUserProfile(userProfile);
                 }
                 updateResult.postValue(true);
-                Log.d("EditTextViewModel", "updateToLocalAndServer: success");
+                Logger.d("EditTextViewModel", "updateToLocalAndServer: success");
             } catch (Exception e) {
-                Log.e("EditTextViewModel", "updateToLocalAndServer: ", e);
+                Logger.e("EditTextViewModel", "updateToLocalAndServer: ", e);
             }
         });
     }

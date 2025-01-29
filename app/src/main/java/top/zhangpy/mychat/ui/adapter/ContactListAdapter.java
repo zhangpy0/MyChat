@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,7 @@ import top.zhangpy.mychat.ui.view.ContactInfoActivity;
 import top.zhangpy.mychat.ui.view.GroupChatActivity;
 import top.zhangpy.mychat.ui.view.PublicAccountActivity;
 import top.zhangpy.mychat.ui.view.TagActivity;
+import top.zhangpy.mychat.util.Logger;
 
 // glide 加载资源图片失败 -> 已解决
 public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.ContactViewHolder> {
@@ -37,7 +37,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     @SuppressLint("NotifyDataSetChanged")
     public void setContacts(List<ContactListItem> contacts) {
         this.contacts = contacts;
-        Log.d("ContactListAdapter", "contacts updated: " + contacts.size());
+        Logger.d("ContactListAdapter", "contacts updated: " + contacts.size());
         notifyDataSetChanged();
     }
 

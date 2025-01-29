@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -20,6 +19,7 @@ import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.ui.model.MessageListItem;
+import top.zhangpy.mychat.util.Logger;
 
 public class ChatViewModel extends AndroidViewModel {
 
@@ -49,18 +49,20 @@ public class ChatViewModel extends AndroidViewModel {
         this.chatRepository = new ChatRepository(application);
         this.contactRepository = new ContactRepository(application);
         this.userRepository = new UserRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public void loadMyAvatar() {
         Integer userId = loadUserId();
-        Log.d("ChatViewModel", "loadMyAvatar: " + userId);
+        Logger.d("ChatViewModel", "loadMyAvatar: " + userId);
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 String path = userRepository.getUserProfileById(userId).getAvatarPath();
                 myAvatarPath.postValue(path); // 设置 LiveData
-                Log.d("ChatViewModel", "loadMyAvatar: " + path);
+                Logger.d("ChatViewModel", "loadMyAvatar: " + path);
             } catch (Exception e) {
-                Log.e("ChatViewModel", "Failed to load my avatar", e);
+                Logger.e("ChatViewModel", "Failed to load my avatar", e);
             }
         });
     }
@@ -68,7 +70,7 @@ public class ChatViewModel extends AndroidViewModel {
     public void loadFriendAvatar(Integer friendId) {
         Integer userId = loadUserId();
         String token = loadToken();
-        Log.d("ChatViewModel", "loadFriendAvatar: " + friendId);
+        Logger.d("ChatViewModel", "loadFriendAvatar: " + friendId);
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 UserProfile friendProfile = userRepository.getUserProfileById(friendId);
@@ -78,9 +80,9 @@ public class ChatViewModel extends AndroidViewModel {
                 }
                 friendAvatarPath.postValue(friendProfile.getAvatarPath()); // 设置 LiveData
                 friendName.postValue(friendProfile.getNickname());
-                Log.d("ChatViewModel", "loadFriendAvatar: " + friendProfile.getAvatarPath());
+                Logger.d("ChatViewModel", "loadFriendAvatar: " + friendProfile.getAvatarPath());
             } catch (IOException e) {
-                Log.e("ChatViewModel", "Failed to load friend avatar", e);
+                Logger.e("ChatViewModel", "Failed to load friend avatar", e);
             }
         });
     }
@@ -99,7 +101,7 @@ public class ChatViewModel extends AndroidViewModel {
                 Integer updated = isAvatarUpdated.getValue();
                 isAvatarUpdated.postValue(updated + 1);
             } catch (IOException e) {
-                Log.e("ChatViewModel", "Failed to get friend avatar", e);
+                Logger.e("ChatViewModel", "Failed to get friend avatar", e);
             }
         });
         return avatar.get();
@@ -122,7 +124,7 @@ public class ChatViewModel extends AndroidViewModel {
         try {
             messageListItems = chatRepository.updateMessagesFromLocal(userId, friendId, loadToken());
         } catch (IOException e) {
-            Log.e("ChatViewModel", "Failed to update messages", e);
+            Logger.e("ChatViewModel", "Failed to update messages", e);
         }
         messages.postValue(messageListItems);
     }
@@ -135,7 +137,7 @@ public class ChatViewModel extends AndroidViewModel {
                 chatRepository.sendMessageToServer(userId, friendId, content, messageType, token, filePath);
                 updateMessagesFromLocal(friendId);
             } catch (IOException e) {
-                Log.e("ChatViewModel", "Failed to send message", e);
+                Logger.e("ChatViewModel", "Failed to send message", e);
             }
         });
     }

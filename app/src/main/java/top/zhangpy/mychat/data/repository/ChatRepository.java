@@ -1,7 +1,6 @@
 package top.zhangpy.mychat.data.repository;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import top.zhangpy.mychat.data.remote.model.DownloadModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.ui.model.ChatListItem;
 import top.zhangpy.mychat.ui.model.MessageListItem;
+import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class ChatRepository {
@@ -54,6 +54,8 @@ public class ChatRepository {
         this.contactRepository = new ContactRepository();
         this.groupRepository = new GroupRepository();
         this.userRepository = new UserRepository();
+        Logger.initialize(null);
+        Logger.enableLogging(true);
     }
 
     public ChatRepository(Context context) {
@@ -63,6 +65,8 @@ public class ChatRepository {
         this.contactRepository = new ContactRepository(context);
         this.groupRepository = new GroupRepository(context);
         this.userRepository = new UserRepository(context);
+        Logger.initialize(context);
+        Logger.enableLogging(true);
     }
 
     public static String getTableName(ChatMessage message) {
@@ -202,7 +206,7 @@ public class ChatRepository {
                 message.setIsDownload(true);
                 updateMessage(getTableName(message), message);
             } catch (IOException e) {
-                Log.e("ChatRepository", "download file failed", e);
+                Logger.e("ChatRepository", "download file failed", e);
             }
 
         return path[0];
@@ -227,7 +231,7 @@ public class ChatRepository {
             message.setIsDownload(true);
             updateMessage(getTableName(message), message);
         } catch (IOException e) {
-            Log.e("ChatRepository", "download image failed", e);
+            Logger.e("ChatRepository", "download image failed", e);
         }
         return path[0];
     }
@@ -239,7 +243,7 @@ public class ChatRepository {
         if (chatMessage.getReceiverType().equals("user")) {
             Friend friend = contactRepository.getFriendByFriendId(friendId);
             if (friend == null) {
-                Log.e("ChatRepository", "Friend not found: " + friendId);
+                Logger.e("ChatRepository", "Friend not found: " + friendId);
             } else {
                 friend.setMessageTime(chatMessage.getSendTime());
                 contactRepository.updateFriend(friend);
@@ -247,7 +251,7 @@ public class ChatRepository {
         } else {
             Group group = groupRepository.getGroupById(groupId);
             if (group == null) {
-                Log.e("ChatRepository", "Group not found: " + groupId);
+                Logger.e("ChatRepository", "Group not found: " + groupId);
             } else {
                 group.setMessageTime(chatMessage.getSendTime());
                 groupRepository.updateGroup(group);
@@ -372,7 +376,7 @@ public class ChatRepository {
             }
             insertMessage(tableName, chatMessage);
         } catch (IOException e) {
-            Log.e("ChatRepository", "Failed to send message", e);
+            Logger.e("ChatRepository", "Failed to send message", e);
             throw e;
         }
         Friend friend = contactRepository.getFriendByFriendId(friendId);

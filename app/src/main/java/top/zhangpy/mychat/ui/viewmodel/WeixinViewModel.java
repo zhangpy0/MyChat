@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -17,6 +16,7 @@ import lombok.Getter;
 import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.ui.model.ChatListItem;
+import top.zhangpy.mychat.util.Logger;
 
 @Getter
 public class WeixinViewModel extends AndroidViewModel {
@@ -31,6 +31,8 @@ public class WeixinViewModel extends AndroidViewModel {
         super(application);
         this.chatRepository = new ChatRepository(application);
         this.contactRepository = new ContactRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public void updateMessages() {
@@ -40,7 +42,7 @@ public class WeixinViewModel extends AndroidViewModel {
             try {
                 contactRepository.updateFriendAndGroupFromServer(token, userId);
             } catch (IOException e) {
-                Log.e("WeixinViewModel", "updateMessages: ", e);
+                Logger.e("WeixinViewModel", "updateMessages: ", e);
             }
             List<ChatListItem> chatListItemList = null;
             try {

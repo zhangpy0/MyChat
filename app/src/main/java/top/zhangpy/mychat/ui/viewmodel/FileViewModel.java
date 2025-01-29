@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -15,6 +14,7 @@ import java.util.concurrent.Executors;
 import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.ChatMessage;
 import top.zhangpy.mychat.data.repository.ChatRepository;
+import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class FileViewModel extends AndroidViewModel {
@@ -33,6 +33,8 @@ public class FileViewModel extends AndroidViewModel {
     public FileViewModel(@NonNull Application application) {
         super(application);
         chatRepository = new ChatRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public boolean isFileDownloaded(String filePath) {
@@ -55,7 +57,7 @@ public class FileViewModel extends AndroidViewModel {
                 isFileDownloaded.postValue(true);
                 filePath.postValue(path);
             } catch (Exception e) {
-                Log.e("FileViewModel", "downloadFile: ", e);
+                Logger.e("FileViewModel", "downloadFile: ", e);
             }
         });
     }

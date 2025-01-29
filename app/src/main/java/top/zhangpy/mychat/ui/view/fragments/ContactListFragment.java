@@ -1,7 +1,6 @@
 package top.zhangpy.mychat.ui.view.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.adapter.ContactListAdapter;
 import top.zhangpy.mychat.ui.tools.SideBar;
 import top.zhangpy.mychat.ui.viewmodel.ContactViewModel;
+import top.zhangpy.mychat.util.Logger;
 
 //  update异常 已解决
 public class ContactListFragment extends Fragment {
@@ -52,7 +52,11 @@ public class ContactListFragment extends Fragment {
         });
 
         viewModel.updateContactListFromServer();
-        Log.d("ContactListFragment", "updateContactListFromServer");
+
+        Logger.initialize(requireContext());
+        Logger.enableLogging(true);
+
+        Logger.d("ContactListFragment", "updateContactListFromServer");
         return view;
     }
 
@@ -68,9 +72,9 @@ public class ContactListFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             // Fragment 显示到前台时更新联系人列表
-            Log.d("ContactListFragment", "onHiddenChanged");
+            Logger.d("ContactListFragment", "onHiddenChanged");
             viewModel.updateContactListFromServer();
-            Log.d("ContactListFragment", "updateContactListFromServer");
+            Logger.d("ContactListFragment", "updateContactListFromServer");
         }
     }
 }

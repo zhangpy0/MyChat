@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -26,6 +25,7 @@ import java.io.IOException;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.viewmodel.PersonalInfoViewModel;
+import top.zhangpy.mychat.util.Logger;
 
 public class EditAvatarActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -36,6 +36,9 @@ public class EditAvatarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_avatar);
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
 
         viewModel = new ViewModelProvider(
                 this,
@@ -115,7 +118,7 @@ public class EditAvatarActivity extends AppCompatActivity {
             resultIntent.putExtra("croppedImageUri", file.getAbsolutePath());
             setResult(RESULT_OK, resultIntent);
 
-            Log.d("EditAvatarActivity", "保存cache成功: " + file.getAbsolutePath());
+            Logger.d("EditAvatarActivity", "保存cache成功: " + file.getAbsolutePath());
 
             String newPath = viewModel.updateUserAvatar(file.getAbsolutePath());
             resultIntent.putExtra("result_avatar", newPath);
@@ -123,7 +126,7 @@ public class EditAvatarActivity extends AppCompatActivity {
 
 
         } catch (IOException e) {
-            Log.e("EditAvatarActivity", "保存失败", e);
+            Logger.e("EditAvatarActivity", "保存失败", e);
             Toast.makeText(this, "保存失败", Toast.LENGTH_SHORT).show();
         }
     }

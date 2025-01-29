@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -18,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.Getter;
 import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.ui.model.ContactListItem;
+import top.zhangpy.mychat.util.Logger;
 
 public class ContactViewModel extends AndroidViewModel {
 
@@ -30,6 +30,8 @@ public class ContactViewModel extends AndroidViewModel {
     public ContactViewModel(@NonNull Application application) {
         super(application);
         contactRepository = new ContactRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public void updateContactListFromServer() {
@@ -39,7 +41,7 @@ public class ContactViewModel extends AndroidViewModel {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 List<ContactListItem> friendList = contactRepository.getFriendListFromServer(token, userId);
-                Log.d("ContactViewModel", "updateContactListFromServer: friendList " + friendList.size());
+                Logger.d("ContactViewModel", "updateContactListFromServer: friendList " + friendList.size());
                 contacts.set(friendList);
                 List<ContactListItem> contactList = null;
                 contactList = getInitialContactList();
@@ -47,9 +49,9 @@ public class ContactViewModel extends AndroidViewModel {
                     contactList.addAll(contacts.get());
                 }
                 this.contactList.postValue(contactList);
-                Log.d("ContactViewModel", "updateContactListFromServer: " + contacts.get());
+                Logger.d("ContactViewModel", "updateContactListFromServer: " + contacts.get());
             } catch (IOException e) {
-                Log.e("ContactViewModel", "updateContactListFromServer: ", e);
+                Logger.e("ContactViewModel", "updateContactListFromServer: ", e);
             }
         });
     }

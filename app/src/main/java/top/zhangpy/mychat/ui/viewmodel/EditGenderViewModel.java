@@ -3,7 +3,6 @@ package top.zhangpy.mychat.ui.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -16,6 +15,7 @@ import lombok.Getter;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class EditGenderViewModel extends AndroidViewModel {
 
@@ -30,6 +30,8 @@ public class EditGenderViewModel extends AndroidViewModel {
     public EditGenderViewModel(@NonNull Application application) {
         super(application);
         userRepository = new UserRepository(application);
+        Logger.initialize(application.getApplicationContext());
+        Logger.enableLogging(true);
     }
 
     public LiveData<String> getSelectedGender() {
@@ -64,7 +66,7 @@ public class EditGenderViewModel extends AndroidViewModel {
                     selectedGender.postValue("女");
                 }
             } catch (Exception e) {
-                Log.e("EditGenderViewModel", "initGender: ", e);
+                Logger.e("EditGenderViewModel", "initGender: ", e);
             }
         });
     }
@@ -86,9 +88,9 @@ public class EditGenderViewModel extends AndroidViewModel {
                 userProfile.setGender(newGender);
                 userRepository.updateUserProfile(userProfile);
                 saveResult.postValue(true);
-                Log.d("EditGenderViewModel", "updateGenderToLocalAndServer: success");
+                Logger.d("EditGenderViewModel", "updateGenderToLocalAndServer: success");
             } catch (Exception e) {
-                Log.e("EditGenderViewModel", "updateGenderToLocalAndServer: ", e);
+                Logger.e("EditGenderViewModel", "updateGenderToLocalAndServer: ", e);
             }
         });
     }

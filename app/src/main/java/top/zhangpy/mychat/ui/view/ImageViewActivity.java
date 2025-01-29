@@ -1,7 +1,6 @@
 package top.zhangpy.mychat.ui.view;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,6 +9,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import top.zhangpy.mychat.R;
+import top.zhangpy.mychat.util.Logger;
 
 public class ImageViewActivity extends AppCompatActivity {
 
@@ -22,8 +22,11 @@ public class ImageViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_view);
 
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         imageUrl = getIntent().getStringExtra("image_url");
-        Log.d("ImageViewActivity", "onCreate: " + imageUrl);
+        Logger.d("ImageViewActivity", "onCreate: " + imageUrl);
 
         photoView = findViewById(R.id.ImageView);
 

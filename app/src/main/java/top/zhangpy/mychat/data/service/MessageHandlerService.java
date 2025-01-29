@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -30,6 +29,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ServerMessageModel;
 import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.ContactRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class MessageHandlerService extends Service {
     private static final String TAG = "MessageHandlerService";
@@ -56,7 +56,7 @@ public class MessageHandlerService extends Service {
             if ("top.zhangpy.mychat.MESSAGE_RECEIVED".equals(intent.getAction())) {
                 String message = intent.getStringExtra("message");
                 if (message != null) {
-                    Log.i("MessageHandlerService", "BroadcastReceiver get message" + message);
+                    Logger.i("MessageHandlerService", "BroadcastReceiver get message" + message);
                     handleMessage(message);
                 }
             }
@@ -80,8 +80,12 @@ public class MessageHandlerService extends Service {
         token = loadToken();
         contactRepository = new ContactRepository(getApplication());
         chatRepository = new ChatRepository(getApplication());
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         if (userId == -1 || token == null) {
-            Log.e(TAG, "No user id or token found");
+            Logger.e(TAG, "No user id or token found");
             stopSelf();
             return;
         }
@@ -91,7 +95,7 @@ public class MessageHandlerService extends Service {
         } else {
             registerReceiver(messageReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
         }
-        Log.i(TAG, "MessageHandlerService started and receiver registered");
+        Logger.i(TAG, "MessageHandlerService started and receiver registered");
 
         IntentFilter clearFilter = new IntentFilter("top.zhangpy.mychat.CLEAR_NOTIFICATIONS");
         registerReceiver(clearNotificationReceiver, clearFilter, Context.RECEIVER_NOT_EXPORTED);
@@ -107,7 +111,7 @@ public class MessageHandlerService extends Service {
                 processMessage(message);
                 notifyUIUpdate();
             } catch (Exception e) {
-                Log.e(TAG, "Error processing message: " + e.getMessage());
+                Logger.e(TAG, "Error processing message: " + e.getMessage());
             }
         });
     }
@@ -117,7 +121,7 @@ public class MessageHandlerService extends Service {
         super.onDestroy();
         unregisterReceiver(messageReceiver);
         unregisterReceiver(clearNotificationReceiver);
-        Log.i(TAG, "MessageHandlerService stopped and receiver unregistered");
+        Logger.i(TAG, "MessageHandlerService stopped and receiver unregistered");
 
         // 广播 MessageHandlerService 被停止的事件
         Intent intent = new Intent("top.zhangpy.mychat.MESSAGE_HANDLER_SERVICE_STOPPED");
@@ -141,19 +145,19 @@ public class MessageHandlerService extends Service {
     }
 
     private void processMessage(String message) {
-        Log.i(TAG, "Handling message: " + message);
+        Logger.i(TAG, "Handling message: " + message);
 
         contactId = -1;
 
         ServerMessageModel serverMessage = ServerMessageMapper.mapToServerMessageModel(message);
         if (serverMessage == null) {
-            Log.e(TAG, "Failed to parse message: " + message);
+            Logger.e(TAG, "Failed to parse message: " + message);
             return;
         }
         boolean isServerMessage = ServerMessageMapper.isServerMessage(serverMessage);
         updateNotification(String.valueOf(serverMessage.getSenderId()));
         if (isServerMessage) {
-            Log.i(TAG, "Received server message: " + serverMessage);
+            Logger.i(TAG, "Received server message: " + serverMessage);
             int messageType = ServerMessageMapper.getServerMessageType(serverMessage);
             RequestMapModel requestMap = new RequestMapModel();
             requestMap.setUserId(String.valueOf(userId));
@@ -164,7 +168,7 @@ public class MessageHandlerService extends Service {
                     try {
                         contactRepository.updateContactApplyFromServer(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply: " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -176,7 +180,7 @@ public class MessageHandlerService extends Service {
                         requestMap.setUserId(String.valueOf(userId));
                         contactRepository.updateContactOfFriend(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply and contact(Friend): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply and contact(Friend): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -188,7 +192,7 @@ public class MessageHandlerService extends Service {
                         requestMap.setUserId(String.valueOf(userId));
                         contactRepository.updateContactOfGroup(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply and contact(Group): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply and contact(Group): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -197,15 +201,15 @@ public class MessageHandlerService extends Service {
                     try {
                         contactRepository.updateContactOfGroup(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contact(Group): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contact(Group): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
                 default:
-                    Log.e(TAG, "Invalid message type: " + messageType);
+                    Logger.e(TAG, "Invalid message type: " + messageType);
             }
         } else {
-            Log.i(TAG, "Received chat message: " + serverMessage);
+            Logger.i(TAG, "Received chat message: " + serverMessage);
             ChatMessageModel chatMessage = ServerMessageMapper.mapToChatMessageModel(serverMessage);
             ChatMessage chatMessageEntity = ChatMessageMapper.mapToChatMessage(chatMessage);
 
@@ -214,12 +218,12 @@ public class MessageHandlerService extends Service {
             try {
                 boolean isUpdated = chatRepository.updateChatFromServer(getApplicationContext(), String.valueOf(userId), token, chatMessageEntity);
                 if (isUpdated) {
-                    Log.i(TAG, "Chat updated from server: " + chatMessageEntity);
+                    Logger.i(TAG, "Chat updated from server: " + chatMessageEntity);
                 } else {
-                    Log.e(TAG, "Failed to update chat from server: " + chatMessageEntity);
+                    Logger.e(TAG, "Failed to update chat from server: " + chatMessageEntity);
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Failed to update chat from server: " + e.getMessage());
+                Logger.e(TAG, "Failed to update chat from server: " + e.getMessage());
             }
             if (chatMessageEntity.getReceiverType().equals("user")) {
                 contactId = chatMessageEntity.getSenderId();
@@ -284,6 +288,6 @@ public class MessageHandlerService extends Service {
         totalUnreadMessages = 0;
         unreadMessageSenders.clear();
         notificationManager.cancel(1); // 1 是通知的 ID
-        Log.i(TAG, "Notifications cleared and unread message count reset");
+        Logger.i(TAG, "Notifications cleared and unread message count reset");
     }
 }

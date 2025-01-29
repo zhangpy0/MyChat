@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -38,6 +37,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ServerMessageModel;
 import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.ContactRepository;
+import top.zhangpy.mychat.util.Logger;
 
 public class MessageService extends Service {
 
@@ -75,8 +75,12 @@ public class MessageService extends Service {
         token = loadToken();
         contactRepository = new ContactRepository(getApplication());
         chatRepository = new ChatRepository(getApplication());
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         if (userId == -1 || token == null) {
-            Log.e(TAG, "No user id or token found");
+            Logger.e(TAG, "No user id or token found");
             stopSelf();
             return;
         }
@@ -133,7 +137,7 @@ public class MessageService extends Service {
             webSocket.close(1000, "Service destroyed");
         }
         unregisterReceiver(clearNotificationReceiver);
-        Log.i(TAG, "MessageService stopped and receiver unregistered");
+        Logger.i(TAG, "MessageService stopped and receiver unregistered");
 
     }
 
@@ -156,7 +160,7 @@ public class MessageService extends Service {
     private void connectWebSocket() {
         String token = loadToken();
         if (token == null) {
-            Log.e("MessageReceiverService", "No token found");
+            Logger.e("MessageReceiverService", "No token found");
             stopSelf(); // 没有 token，停止服务
             return;
         }
@@ -165,7 +169,7 @@ public class MessageService extends Service {
                 .pingInterval(5, java.util.concurrent.TimeUnit.SECONDS) // 心跳间隔
                 .addInterceptor(chain -> {
                     Request request = chain.request();
-                    Log.d("OkHttp", "Request: " + request.headers());
+                    Logger.d("OkHttp", "Request: " + request.headers());
                     return chain.proceed(request);
                 })
                 .build();
@@ -181,14 +185,14 @@ public class MessageService extends Service {
             public void onOpen(WebSocket webSocket, Response response) {
                 super.onOpen(webSocket, response);
                 updateNotification("Connected to server");
-                Log.i("MessageReceiverService", "Connected to server");
+                Logger.i("MessageReceiverService", "Connected to server");
                 sendHeartbeat();
             }
 
             @Override
             public void onMessage(WebSocket webSocket, String text) {
                 super.onMessage(webSocket, text);
-                Log.i("MessageReceiverService", "Received message: " + text);
+                Logger.i("MessageReceiverService", "Received message: " + text);
                 webSocket.send("get");
                 handleMessage(text);
             }
@@ -196,14 +200,14 @@ public class MessageService extends Service {
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
-                Log.e("MessageReceiverService", "WebSocket failure: " + t.getMessage());
+                Logger.e("MessageReceiverService", "WebSocket failure: " + t.getMessage());
                 reconnectWebSocket();
             }
 
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
                 super.onClosed(webSocket, code, reason);
-                Log.i("MessageReceiverService", "WebSocket closed: " + reason);
+                Logger.i("MessageReceiverService", "WebSocket closed: " + reason);
                 reconnectWebSocket();
             }
         });
@@ -217,22 +221,22 @@ public class MessageService extends Service {
             if (webSocket != null) {
                 try {
                     webSocket.send("heartbeat");
-                    Log.i("MessageReceiverService", "Sent heartbeat");
+                    Logger.i("MessageReceiverService", "Sent heartbeat");
                 } catch (Exception e) {
-                    Log.e("MessageReceiverService", "Heartbeat failed: " + e.getMessage());
+                    Logger.e("MessageReceiverService", "Heartbeat failed: " + e.getMessage());
                 }
             }
         }, 0, 5, TimeUnit.SECONDS); // 每5秒发送一次
     }
 
     private void reconnectWebSocket() {
-        Log.i("MessageReceiverService", "Reconnecting to server...");
+        Logger.i("MessageReceiverService", "Reconnecting to server...");
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 Thread.sleep(3000); // 延迟重连
                 connectWebSocket();
             } catch (InterruptedException e) {
-                Log.e("MessageReceiverService", "Reconnect interrupted");
+                Logger.e("MessageReceiverService", "Reconnect interrupted");
             }
         });
     }
@@ -244,25 +248,25 @@ public class MessageService extends Service {
                 processMessage(message);
                 notifyUIUpdate();
             } catch (Exception e) {
-                Log.e(TAG, "Error processing message: " + e.getMessage());
+                Logger.e(TAG, "Error processing message: " + e.getMessage());
             }
         });
     }
 
     private void processMessage(String message) {
-        Log.i(TAG, "Handling message: " + message);
+        Logger.i(TAG, "Handling message: " + message);
 
         contactId = -1;
 
         ServerMessageModel serverMessage = ServerMessageMapper.mapToServerMessageModel(message);
         if (serverMessage == null) {
-            Log.e(TAG, "Failed to parse message: " + message);
+            Logger.e(TAG, "Failed to parse message: " + message);
             return;
         }
         boolean isServerMessage = ServerMessageMapper.isServerMessage(serverMessage);
         updateNotificationForNew(String.valueOf(serverMessage.getSenderId()));
         if (isServerMessage) {
-            Log.i(TAG, "Received server message: " + serverMessage);
+            Logger.i(TAG, "Received server message: " + serverMessage);
             int messageType = ServerMessageMapper.getServerMessageType(serverMessage);
             RequestMapModel requestMap = new RequestMapModel();
             requestMap.setUserId(String.valueOf(userId));
@@ -273,7 +277,7 @@ public class MessageService extends Service {
                     try {
                         contactRepository.updateContactApplyFromServer(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply: " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -285,7 +289,7 @@ public class MessageService extends Service {
                         requestMap.setUserId(String.valueOf(userId));
                         contactRepository.updateContactOfFriend(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply and contact(Friend): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply and contact(Friend): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -297,7 +301,7 @@ public class MessageService extends Service {
                         requestMap.setUserId(String.valueOf(userId));
                         contactRepository.updateContactOfGroup(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contactApply and contact(Group): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contactApply and contact(Group): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
@@ -306,15 +310,15 @@ public class MessageService extends Service {
                     try {
                         contactRepository.updateContactOfGroup(token, requestMap);
                     } catch (IOException e) {
-                        Log.e(TAG, "Failed to update contact(Group): " + e.getMessage());
+                        Logger.e(TAG, "Failed to update contact(Group): " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                     break;
                 default:
-                    Log.e(TAG, "Invalid message type: " + messageType);
+                    Logger.e(TAG, "Invalid message type: " + messageType);
             }
         } else {
-            Log.i(TAG, "Received chat message: " + serverMessage);
+            Logger.i(TAG, "Received chat message: " + serverMessage);
             ChatMessageModel chatMessage = ServerMessageMapper.mapToChatMessageModel(serverMessage);
             ChatMessage chatMessageEntity = ChatMessageMapper.mapToChatMessage(chatMessage);
 
@@ -323,12 +327,12 @@ public class MessageService extends Service {
             try {
                 boolean isUpdated = chatRepository.updateChatFromServer(getApplicationContext(), String.valueOf(userId), token, chatMessageEntity);
                 if (isUpdated) {
-                    Log.i(TAG, "Chat updated from server: " + chatMessageEntity);
+                    Logger.i(TAG, "Chat updated from server: " + chatMessageEntity);
                 } else {
-                    Log.e(TAG, "Failed to update chat from server: " + chatMessageEntity);
+                    Logger.e(TAG, "Failed to update chat from server: " + chatMessageEntity);
                 }
             } catch (IOException e) {
-                Log.e(TAG, "Failed to update chat from server: " + e.getMessage());
+                Logger.e(TAG, "Failed to update chat from server: " + e.getMessage());
             }
             if (chatMessageEntity.getReceiverType().equals("user")) {
                 contactId = chatMessageEntity.getSenderId();
@@ -392,6 +396,6 @@ public class MessageService extends Service {
         totalUnreadMessages = 0;
         unreadMessageSenders.clear();
         notificationManager.cancel(1); // 1 是通知的 ID
-        Log.i(TAG, "Notifications cleared and unread message count reset");
+        Logger.i(TAG, "Notifications cleared and unread message count reset");
     }
 }

@@ -3,4 +3,12 @@
     <external-path
         name="external_files"
         path="." />
+<!--    &lt;!&ndash; 对应外部存储的日志目录 &ndash;&gt;-->
+<!--    <external-files-path-->
+<!--        name="app_logs"-->
+<!--        path="app_logs/" />-->
+    <!-- 对应内部存储的日志目录 -->
+    <files-path
+        name="internal_logs"
+        path="app_logs/" />
 </paths>

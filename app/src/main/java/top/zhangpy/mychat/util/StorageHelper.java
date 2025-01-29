@@ -146,7 +146,7 @@ public class StorageHelper {
             fos.close();
             inputStream.close();
         } catch (Exception e) {
-            Log.e("StorageHelper", "Failed to save file", e);
+            Logger.e("StorageHelper", "Failed to save file", e);
             return null; // 保存失败返回 null
         }
 
@@ -171,7 +171,7 @@ public class StorageHelper {
             fis.read(bytes);
             return Base64.getEncoder().encodeToString(bytes);
         } catch (IOException e) {
-            Log.e("StorageHelper", "Failed to read file", e);
+            Logger.e("StorageHelper", "Failed to read file", e);
             return "";
         }
     }
@@ -186,7 +186,7 @@ public class StorageHelper {
                 out.write(buffer, 0, length);
             }
         } catch (IOException e) {
-            Log.e("StorageHelper", "File copy failed", e);
+            Logger.e("StorageHelper", "File copy failed", e);
         }
     }
 

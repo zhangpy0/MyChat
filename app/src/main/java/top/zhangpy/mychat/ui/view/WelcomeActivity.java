@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 import java.util.List;
@@ -20,6 +19,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.UserAccountModel;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.data.service.MessageService;
+import top.zhangpy.mychat.util.Logger;
 
 
 public class WelcomeActivity extends Activity {
@@ -30,6 +30,10 @@ public class WelcomeActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome); //设置布局\
+
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         userRepository = new UserRepository(this);
         Executors.newSingleThreadExecutor().execute(() -> {
             boolean isExist = false;
@@ -58,12 +62,12 @@ public class WelcomeActivity extends Activity {
                     }
                 }
             } catch (Exception e) {
-                Log.e("WelcomeActivity", e.getMessage());
+                Logger.e("WelcomeActivity", e.getMessage());
             } finally {
                 if (!isExist) {
-                    Log.i("WelcomeActivity", "No user found");
+                    Logger.i("WelcomeActivity", "No user found");
                 } else {
-                    Log.i("WelcomeActivity", "User found");
+                    Logger.i("WelcomeActivity", "User found");
                     User locaUser = users.get(0);
                     saveIdToken(this, locaUser.getUserId(), locaUser.getToken());
 

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +29,7 @@ import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.adapter.MessageAdapter;
 import top.zhangpy.mychat.ui.viewmodel.ChatViewModel;
 import top.zhangpy.mychat.util.HideKeyboard;
+import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class ChatActivity extends AppCompatActivity {
@@ -80,6 +80,9 @@ public class ChatActivity extends AppCompatActivity {
 
         LinearLayout rootLayout = findViewById(R.id.root_layout);
 
+        Logger.initialize(getApplicationContext());
+        Logger.enableLogging(true);
+
         // 设置触摸监听器
         rootLayout.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -89,7 +92,7 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         contactId = getIntent().getIntExtra("contact_id", -1);
-        Log.d("ChatActivity", "contactId: " + contactId);
+        Logger.d("ChatActivity", "contactId: " + contactId);
 
         // 注册 ActivityResultLauncher
         imagePreviewLauncher = registerForActivityResult(
@@ -262,7 +265,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void checkAndResetAdapter(int contactId) {
-        Log.d("ChatActivity", "checkAndResetAdapter");
+        Logger.d("ChatActivity", "checkAndResetAdapter");
         String myAvatar = viewModel.getMyAvatarPath().getValue();
         String friendAvatar = viewModel.getFriendAvatarPath().getValue();
         if (myAvatar != null && friendAvatar != null) { // 确保只初始化一次
