@@ -1,6 +1,7 @@
 package top.zhangpy.mychat.ui.view;
 
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import top.zhangpy.mychat.ui.view.fragments.FindFragment;
 import top.zhangpy.mychat.ui.view.fragments.SelfFragment;
 import top.zhangpy.mychat.ui.view.fragments.WeixinFragment;
 import top.zhangpy.mychat.ui.viewmodel.ChatListViewModel;
+import top.zhangpy.mychat.util.DoubleSwipeBackHelper;
 import top.zhangpy.mychat.util.PermissionUtils;
 
 public class ChatListActivity extends FragmentActivity {
@@ -27,12 +29,16 @@ public class ChatListActivity extends FragmentActivity {
     private Fragment findFragment;
     private Fragment selfFragment;
 
+    private DoubleSwipeBackHelper swipeBackHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_chatlist);
         viewModel = new ViewModelProvider(this).get(ChatListViewModel.class);
+
+        swipeBackHelper = new DoubleSwipeBackHelper(this);
 
         findViewById(R.id.weixin_layout).setOnClickListener(v -> viewModel.setSelectedTab(0));
         findViewById(R.id.contacts_layout).setOnClickListener(v -> viewModel.setSelectedTab(1));
@@ -51,6 +57,14 @@ public class ChatListActivity extends FragmentActivity {
         if (!PermissionUtils.isNotificationPermissionGranted(this)) {
             PermissionUtils.requestNotificationPermission(this);
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (swipeBackHelper.onTouchEvent(event)) {
+            return true;
+        }
+        return super.onTouchEvent(event);
     }
 
     private void setupObservers() {

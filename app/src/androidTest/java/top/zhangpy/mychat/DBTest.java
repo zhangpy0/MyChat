@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -28,7 +27,6 @@ import top.zhangpy.mychat.data.mapper.ChatMessageMapper;
 import top.zhangpy.mychat.data.mapper.ServerMessageMapper;
 import top.zhangpy.mychat.data.mapper.UserAccountMapper;
 import top.zhangpy.mychat.data.mapper.UserProfileMapper;
-import top.zhangpy.mychat.data.service.MessageReceiverService;
 import top.zhangpy.mychat.data.remote.model.ChatMessageModel;
 import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ServerMessageModel;
@@ -36,6 +34,9 @@ import top.zhangpy.mychat.data.remote.model.UserAccountModel;
 import top.zhangpy.mychat.data.remote.model.UserProfileModel;
 import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
+import top.zhangpy.mychat.data.service.MessageReceiverService;
+import top.zhangpy.mychat.util.Logger;
+import top.zhangpy.mychat.util.StorageHelper;
 
 @RunWith(AndroidJUnit4.class)
 public class DBTest {
@@ -62,6 +63,13 @@ public class DBTest {
     public void tearDown() {
         userRepository = null;
         chatRepository = null;
+    }
+
+    @Test
+    public void storageTest() {
+        String path = "content://com.tencent.mtt.fileprovider/external_file_path/extract_root/QB_extracted/%E8%AE%BA%E6%96%87%E8%B5%84%E6%96%99/%E8%AE%BA%E6%96%87%E8%B5%84%E6%96%99/%E6%95%B0%E5%AD%97%E5%8C%96%E8%BD%AC%E5%9E%8B/%E4%BA%A7%E5%93%81%E6%9C%8D%E5%8A%A1%E4%BE%9B%E5%BA%94%E9%93%BE%E5%AE%9A%E4%BB%B7%E5%86%B3%E7%AD%96%EF%BC%9A%E6%95%B0...%E6%BA%90%E6%8C%96%E6%8E%98%E4%B8%8E%E5%85%B1%E4%BA%AB%E7%AD%96%E7%95%A5%E7%9A%84%E5%BD%B1%E5%93%8D%E5%88%86%E6%9E%90_%E5%88%98%E4%B8%9C%E9%9C%9E.pdf";
+        String realPath = StorageHelper.getRealPathFromURI(context, path);
+        Logger.d("Test", "Real path: " + realPath);
     }
 
     @Test

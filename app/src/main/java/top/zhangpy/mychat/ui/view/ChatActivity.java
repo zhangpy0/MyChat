@@ -98,9 +98,13 @@ public class ChatActivity extends AppCompatActivity {
         imagePreviewLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK) {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        if (selectedImageUri != null) {
+                            viewModel.sendMessageToFriend(contactId, "", "image", String.valueOf(selectedImageUri));
+                        }
                         // 从 ImagePreviewActivity 返回，更新消息
-                        viewModel.updateMessagesFromLocal(contactId);
+//                        viewModel.updateMessagesFromLocal(contactId);
                     }
                 }
         );
@@ -111,6 +115,7 @@ public class ChatActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectFileUri = result.getData().getData();
+                        Logger.d("ChatActivity", "selectFileUri: " + selectFileUri);
                         if (selectFileUri != null) {
                             // 获取文件路径
                             String filePath = StorageHelper.getRealPathFromURI(this, String.valueOf(selectFileUri));

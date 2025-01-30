@@ -2,11 +2,12 @@ package top.zhangpy.mychat.util;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.util.Log;
+import android.provider.OpenableColumns;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -15,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -193,60 +195,204 @@ public class StorageHelper {
     // 将 content:// URI 转换为真实路径
     public static String getRealPathFromURI(Context context, String uriString) {
         Uri uri = Uri.parse(uriString);
-        String realPath = null;
+        Logger.initialize(context);
+        Logger.enableLogging(true);
+        Logger.d("StorageHelper", "Processing URI: " + uri.toString());
 
-        // 处理不同类型的 URI
-        if ("content".equalsIgnoreCase(uri.getScheme())) {
-            // 如果是 DocumentProvider 类型的 URI
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
-                if (isExternalStorageDocument(uri)) {
-                    // ExternalStorageProvider
-                    String docId = DocumentsContract.getDocumentId(uri);
-                    String[] split = docId.split(":");
-                    String type = split[0];
-                    if ("primary".equalsIgnoreCase(type)) {
-                        return context.getExternalFilesDir(null) + "/" + split[1];
-                    }
-                    // 处理其他类型的存储（如 SD 卡）
-                } else if (isDownloadsDocument(uri)) {
-                    // DownloadsProvider
-                    String id = DocumentsContract.getDocumentId(uri);
-                    if (id.startsWith("raw:")) {
-                        return id.replaceFirst("raw:", "");
-                    }
-                    Uri contentUri = ContentUris.withAppendedId(
-                            Uri.parse("content://downloads/public_downloads"),
-                            Long.parseLong(id)
-                    );
-                    return getDataColumn(context, contentUri, null, null);
-                } else if (isMediaDocument(uri)) {
-                    // MediaProvider
-                    String docId = DocumentsContract.getDocumentId(uri);
-                    String[] split = docId.split(":");
-                    String type = split[0];
-                    Uri contentUri = null;
-                    if ("image".equals(type)) {
-                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                    } else if ("video".equals(type)) {
-                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                    } else if ("audio".equals(type)) {
-                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                    }
-                    String selection = "_id=?";
-                    String[] selectionArgs = new String[]{split[1]};
-                    return getDataColumn(context, contentUri, selection, selectionArgs);
-                }
-            } else {
-                // ContentProvider (非 DocumentProvider)
-                return getDataColumn(context, uri, null, null);
-            }
-        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            // 如果是文件路径
-            return uri.getPath();
-        } else {
-            realPath = uriString;
+        // 优化点：使用提前返回减少嵌套层级
+        if ("file".equalsIgnoreCase(uri.getScheme())) {
+            Logger.d("StorageHelper", "Handling file URI: " + uri);
+            return uri.getPath().replaceAll("%20", " ");
         }
-        return realPath;
+
+        if (!"content".equalsIgnoreCase(uri.getScheme())) {
+            Logger.w("StorageHelper", "Unsupported URI scheme: " + uri.getScheme());
+            return uriString;
+        }
+
+        if (isLegacyMediaStoreUri(uri)) {
+            Logger.d("StorageHelper", "Handling legacy MediaStore URI");
+            return getDataColumn(context, uri, null, null);
+        }
+
+        // 仅处理content协议
+        if (DocumentsContract.isDocumentUri(context, uri)) {
+            Logger.d("StorageHelper", "Handling document URI: " + uri);
+            return handleDocumentUri(context, uri);
+        } else {
+            // 优化点：提取独立方法处理常规内容URI
+            Logger.d("StorageHelper", "Handling content URI: " + uri);
+            return handleDocumentUri(context, uri);
+        }
+    }
+
+    private static String handleDocumentUri(Context context, Uri uri) {
+        try {
+            if (isThirdPartyFileProvider(uri)) {
+                Logger.d("StorageHelper", "Handling third-party file provider: " + uri);
+                return handleThirdPartyFileProvider(context, uri);
+            }
+
+            if (isExternalStorageDocument(uri)) {
+                Logger.d("StorageHelper", "Handling external storage document: " + uri);
+                return handleExternalStorageDocument(context, uri);
+            } else if (isDownloadsDocument(uri)) {
+                Logger.d("StorageHelper", "Handling downloads document: " + uri);
+                return handleDownloadsDocument(context, uri);
+            } else if (isMediaDocument(uri)) {
+                Logger.d("StorageHelper", "Handling media document: " + uri);
+                return handleMediaDocument(context, uri);
+            }
+
+            Logger.d("StorageHelper", "Handling unknown: " + uri);
+            return handleThirdPartyFileProvider(context, uri);
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Error handling document URI: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private static boolean isLegacyMediaStoreUri(Uri uri) {
+        String authority = uri.getAuthority();
+        return "media".equals(authority)
+                || "media.external".equals(authority)
+                || "media.internal".equals(authority);
+    }
+
+    private static boolean isThirdPartyFileProvider(Uri uri) {
+        String authority = uri.getAuthority();
+        return authority != null && authority.contains(".fileprovider"); // 匹配常见 FileProvider 命名模式
+    }
+
+    private static String handleThirdPartyFileProvider(Context context, Uri uri) {
+        // 通过流复制文件（兼容性最好）
+        try {
+            // 生成临时文件名
+            String fileName = getFileNameFromUri(context, uri);
+            Logger.d("StorageHelper", "Third-party file name: " + fileName);
+            SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+            String userId = String.valueOf(prefs.getInt("user_id", -1));
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            String filePath = saveFile(context, "chat", userId, userId, fileName, is);
+            Logger.d("StorageHelper", "Saved third-party file: " + filePath);
+            if (filePath != null) {
+                return filePath;
+            }
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Error copying third-party file: " + e.getMessage());
+            return null;
+        }
+        return null;
+    }
+
+    private static String getFileNameFromUri(Context context, Uri uri) {
+        String name = null;
+        try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                name = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            }
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Error getting filename: " + e.getMessage());
+        }
+        return name != null ? name : "temp_" + System.currentTimeMillis();
+    }
+
+    private static String handleExternalStorageDocument(Context context, Uri uri) {
+        String docId;
+        try {
+            docId = DocumentsContract.getDocumentId(uri);
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Can't get document ID: " + e.getMessage());
+            return null;
+        }
+
+        String[] split = docId.split(":");
+        if (split.length < 2) {
+            Logger.w("StorageHelper", "Invalid document ID format: " + docId);
+            return null;
+        }
+
+        String type = split[0];
+        String path = split[1];
+
+        // 优化点：扩展支持更多存储类型
+        if ("primary".equalsIgnoreCase(type)) {
+            return new File(context.getExternalFilesDir(null), path).getAbsolutePath();
+        } else {
+            // 处理SD卡等外部存储（需要根据具体设备实现）
+            File[] externalDirs = context.getExternalFilesDirs(null);
+            if (externalDirs.length > 1 && externalDirs[1] != null) {
+                return new File(externalDirs[1], path).getAbsolutePath();
+            }
+        }
+        Logger.w("StorageHelper", "Unhandled external storage type: " + type);
+        return null;
+    }
+
+    private static String handleDownloadsDocument(Context context, Uri uri) {
+        String id;
+        try {
+            id = DocumentsContract.getDocumentId(uri);
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Can't get download document ID: " + e.getMessage());
+            return null;
+        }
+
+        // 优化点：增强raw类型处理
+        if (id.startsWith("raw:")) {
+            return id.replaceFirst("raw:", "");
+        }
+
+        try {
+            Uri contentUri = ContentUris.withAppendedId(
+                    Uri.parse("content://downloads/public_downloads"),
+                    Long.parseLong(id)
+            );
+            return getDataColumn(context, contentUri, null, null);
+        } catch (NumberFormatException e) {
+            Logger.e("StorageHelper", "Invalid download document ID: " + id);
+            return null;
+        }
+    }
+
+    private static String handleMediaDocument(Context context, Uri uri) {
+        String docId;
+        try {
+            docId = DocumentsContract.getDocumentId(uri);
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Can't get media document ID: " + e.getMessage());
+            return null;
+        }
+
+        String[] split = docId.split(":");
+        if (split.length < 2) {
+            Logger.w("StorageHelper", "Invalid media document ID: " + docId);
+            return null;
+        }
+
+        String type = split[0];
+        String id = split[1];
+
+        Uri contentUri = getMediaContentUri(type);
+        if (contentUri == null) {
+            Logger.w("StorageHelper", "Unknown media type: " + type);
+            return null;
+        }
+
+        return getDataColumn(context, contentUri, "_id=?", new String[]{id});
+    }
+
+    private static Uri getMediaContentUri(String type) {
+        switch (type.toLowerCase(Locale.US)) {
+            case "image":
+                return MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            case "video":
+                return MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+            case "audio":
+                return MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            default:
+                return null;
+        }
     }
 
     // 检查 URI 是否是 ExternalStorageProvider
@@ -266,22 +412,22 @@ public class StorageHelper {
 
     // 从 ContentProvider 查询路径
     private static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
-        Cursor cursor = null;
-        final String column = "_data";
+        final String column = MediaStore.Files.FileColumns.DATA; // 使用标准常量
         final String[] projection = {column};
 
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+        try (Cursor cursor = context.getContentResolver().query(
+                uri, projection, selection, selectionArgs, null)) {
+
             if (cursor != null && cursor.moveToFirst()) {
-                final int columnIndex = cursor.getColumnIndexOrThrow(column);
+                int columnIndex = cursor.getColumnIndexOrThrow(column);
                 return cursor.getString(columnIndex);
             }
+        } catch (IllegalArgumentException e) {
+            Logger.e("StorageHelper", "Column '_data' not found: " + e.getMessage());
+        } catch (SecurityException e) {
+            Logger.e("StorageHelper", "Permission denied: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            Logger.e("StorageHelper", "Unexpected error: " + e.getMessage());
         }
         return null;
     }

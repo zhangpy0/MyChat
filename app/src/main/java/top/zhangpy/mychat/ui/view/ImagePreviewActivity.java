@@ -47,7 +47,7 @@ public class ImagePreviewActivity extends AppCompatActivity {
         // 初始化 CropImageView
         cropImageView = findViewById(R.id.cropImageView);
         cropImageView.setScaleType(CropImageView.ScaleType.CENTER_INSIDE); // 确保图片以合适比例显示
-        cropImageView.setGuidelines(CropImageView.Guidelines.ON); // 显示裁剪引导线
+//        cropImageView.setGuidelines(CropImageView.Guidelines.ON); // 显示裁剪引导线
 
         // 打开相册选择图片
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -74,8 +74,9 @@ public class ImagePreviewActivity extends AppCompatActivity {
         sendButton.setOnClickListener(v -> {
             Uri croppedImageUri = cropImageView.getImageUri();
             if (croppedImageUri != null) {
-                viewModel.sendMessageToFriend(contactId, "", "image", String.valueOf(croppedImageUri));
+//                viewModel.sendMessageToFriend(contactId, "", "image", String.valueOf(croppedImageUri));
                 Intent intent1 = new Intent();
+                intent1.setData(croppedImageUri);
                 setResult(RESULT_OK, intent1);
                 finish(); // 发送完成后退出当前界面
             }

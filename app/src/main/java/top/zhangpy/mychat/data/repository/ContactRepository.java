@@ -295,7 +295,7 @@ public class ContactRepository {
                 requestMapModel.setFriendId(String.valueOf(friendId));
                 UserProfileModel userProfileModel = searchUser(token, requestMapModel);
                 UserProfile newProfile = UserProfileMapper.mapToUserProfile(userProfileModel, context);
-                userRepository.insertUserProfile(newProfile);
+                userRepository.insertUserProfile(newProfile); // TODO 报错
             }
         }
         return true;

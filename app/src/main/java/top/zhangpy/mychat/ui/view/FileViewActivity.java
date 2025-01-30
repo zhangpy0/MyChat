@@ -119,6 +119,7 @@ public class FileViewActivity extends AppCompatActivity {
                 btnOpen.setVisibility(View.VISIBLE);
                 btnOpen.setActivated(true);
                 btnDownload.setVisibility(View.GONE);
+                filePath = fileViewModel.getFilePath().getValue();
             }
         });
 
@@ -127,7 +128,6 @@ public class FileViewActivity extends AppCompatActivity {
             llDownload.setVisibility(View.VISIBLE);
             btnDownload.setVisibility(View.GONE);
             btnOpen.setActivated(false);
-            filePath = fileViewModel.getFilePath().getValue();
         });
 
         btnOpen.setOnClickListener(v -> {
