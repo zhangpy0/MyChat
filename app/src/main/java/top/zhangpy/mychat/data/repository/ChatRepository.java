@@ -216,6 +216,8 @@ public class ChatRepository {
         String messageId = String.valueOf(message.getFileId());
         final String[] path = {null};
 
+        Logger.d("ChatRepository", "download image message Id: " + messageId);
+
         try {
             DownloadModel downloadModel = downloadFile(userId, messageId, token);
             if (downloadModel == null) {
@@ -226,6 +228,7 @@ public class ChatRepository {
             } else {
                 path[0] = StorageHelper.saveFile(context, "chat_group", String.valueOf(message.getReceiverId()), String.valueOf(message.getGroupId()), downloadModel.getFileName(), downloadModel.getInputStream());
             }
+            Logger.d("ChatRepository", "download image path: " + path[0]);
             message.setFilePath(path[0]);
             message.setIsRead(false);
             message.setIsDownload(true);

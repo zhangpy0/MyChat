@@ -20,9 +20,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
-import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import lombok.Getter;
@@ -32,6 +33,7 @@ import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.ui.view.ContactInfoActivity;
 import top.zhangpy.mychat.ui.view.FileViewActivity;
 import top.zhangpy.mychat.ui.view.ImageViewActivity;
+import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
@@ -82,6 +84,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return messages.size();
     }
 
+    private record MessageViews(ViewGroup container, ImageView avatar, TextView textView,
+                                ImageView imageView, ViewGroup fileContainer, TextView fileName,
+                                TextView fileSize) {
+    }
+
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
 
         // 对方消息视图
@@ -115,8 +122,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
         private String otherAvatarPath;
 
+        private final MessageViews myViews;
+        private final MessageViews otherViews;
+
         public MessageViewHolder(@NonNull View itemView, String myAvatarPath, String otherAvatarPath) {
             super(itemView);
+
+            myViews = new MessageViews(
+                    itemView.findViewById(R.id.my_message_container),
+                    itemView.findViewById(R.id.iv_my_avatar),
+                    itemView.findViewById(R.id.tv_my_message),
+                    itemView.findViewById(R.id.iv_my_image),
+                    itemView.findViewById(R.id.ll_my_file),
+                    itemView.findViewById(R.id.tv_my_file_name),
+                    itemView.findViewById(R.id.tv_my_file_size)
+            );
+
+            otherViews = new MessageViews(
+                    itemView.findViewById(R.id.other_message_container),
+                    itemView.findViewById(R.id.iv_other_avatar),
+                    itemView.findViewById(R.id.tv_other_message),
+                    itemView.findViewById(R.id.iv_other_image),
+                    itemView.findViewById(R.id.ll_other_file),
+                    itemView.findViewById(R.id.tv_other_file_name),
+                    itemView.findViewById(R.id.tv_other_file_size)
+            );
 
             // 初始化对方消息视图
             otherMessageContainer = itemView.findViewById(R.id.other_message_container);
@@ -127,6 +157,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             llOtherFile = itemView.findViewById(R.id.ll_other_file);
             tvOtherFileName = itemView.findViewById(R.id.tv_other_file_name);
             tvOtherFileSize = itemView.findViewById(R.id.tv_other_file_size);
+
+
 
             // 初始化自己消息视图
             myMessageContainer = itemView.findViewById(R.id.my_message_container);
@@ -143,194 +175,414 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         public void bind(MessageListItem message) {
-            if (message.isMe()) {
-                // 显示自己的消息
-                otherMessageContainer.setVisibility(View.GONE);
-                myMessageContainer.setVisibility(View.VISIBLE);
-                Glide.with(itemView.getContext())
-                        .load(myAvatarPath)
-                        .skipMemoryCache(true) // 跳过内存缓存
-                        .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
-                        .placeholder(R.drawable.default_avatar) // 占位符
-                        .error(R.drawable.default_avatar) // 加载失败时的图片
-                        .into(ivMyAvatar);
+            clearAllViews();
+            MessageViews targetViews = message.isMe() ? myViews : otherViews;
+            showMessage(targetViews, message, message.isMe());
+        }
 
-                if ("text".equals(message.getMessageType())) {
-                    tvMyMessage.setVisibility(View.VISIBLE);
-                    ivMyImage.setVisibility(View.GONE);
-                    tvMyMessage.setText(message.getContent());
-                    llMyFile.setVisibility(View.GONE);
-                } else if ("image".equals(message.getMessageType())) {
-                    tvMyMessage.setVisibility(View.GONE);
-                    ivMyImage.setVisibility(View.VISIBLE);
-                    llMyFile.setVisibility(View.GONE);
+        private void showMessage(MessageViews views, MessageListItem message, boolean isMe) {
+            // 显示目标容器
+            setContainerVisible(views.container, true);
 
-                    Glide.with(itemView.getContext())
-                            .load(message.getFilePath())
-                            .skipMemoryCache(true) // 跳过内存缓存
-                            .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
-                            .placeholder(R.drawable.default_avatar) // 占位符
-                            .error(R.drawable.default_avatar) // 加载失败时的图片
-                            .listener(new RequestListener<Drawable>() {
-                                @Override
-                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                                    // 加载失败时处理
-                                    return false; // 返回 false 继续让 Glide 显示 error 图片
-                                }
+            // 加载头像
+            loadAvatar(views.avatar, isMe ? myAvatarPath : otherAvatarPath);
 
-                                @Override
-                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    // 图片加载成功后调整 ImageView 高度
-                                    if (resource != null) {
-                                        int imageWidth = resource.getIntrinsicWidth();
-                                        int imageHeight = resource.getIntrinsicHeight();
+            // 处理消息内容
+            switch (message.getMessageType()) {
+                case "text":
+                    showTextMessage(views, message.getContent());
+                    break;
+                case "image":
+                    showImageMessage(views, message.getFilePath());
+                    setupImageClick(views.imageView, message.getFilePath());
+                    break;
+                case "file":
+                    showFileMessage(views, message);
+                    setupFileClick(views.fileContainer, message, isMe);
+                    break;
+            }
 
-                                        // 固定宽度
-                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
-
-                                        // 根据宽度计算高度，保持比例
-                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
-
-                                        // 设置 ImageView 的宽高
-                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
-                                        params.width = fixedWidth;
-                                        params.height = calculatedHeight;
-                                        ivMyImage.setLayoutParams(params);
-                                    }
-                                    return false; // 返回 false 继续让 Glide 显示图片
-                                }
-                            })
-                            .into(ivMyImage);
-
-                            ivMyImage.setOnClickListener(v -> {
-                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
-                                intent.putExtra("image_url", message.getFilePath());
-                                itemView.getContext().startActivity(intent);
-                            });
-                } else if ("file".equals(message.getMessageType())) {
-                    tvMyMessage.setVisibility(View.GONE);
-                    ivMyImage.setVisibility(View.GONE);
-                    llMyFile.setVisibility(View.VISIBLE);
-                    String filePath = message.getFilePath();
-                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
-                    File file = new File(realPath);
-                    tvMyFileName.setText(message.getFileName());
-                    tvMyFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
-
-                    llMyFile.setOnClickListener(v -> {
-                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
-                        intent.putExtra("id", message.getId());
-                        intent.putExtra("file_path", filePath);
-                        intent.putExtra("file_name", file.getName());
-                        intent.putExtra("file_size", file.length());
-                        intent.putExtra("is_me", true);
-                        intent.putExtra("content", message.getContent());
-                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
-                        intent.putExtra("contact_type", "user");
-                        itemView.getContext().startActivity(intent);
-                    });
-                }
-            } else {
-                // 显示对方的消息
-                myMessageContainer.setVisibility(View.GONE);
-                otherMessageContainer.setVisibility(View.VISIBLE);
-
-                Glide.with(itemView.getContext())
-                        .load(otherAvatarPath)
-                        .skipMemoryCache(true) // 跳过内存缓存
-                        .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
-                        .placeholder(R.drawable.default_avatar) // 占位符
-                        .error(R.drawable.default_avatar) // 加载失败时的图片
-                        .into(ivOtherAvatar);
-
-                ivOtherAvatar.setOnClickListener(v -> {
-                    int contactId = ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId();
-                    Intent intent = new Intent(itemView.getContext(), ContactInfoActivity.class);
-                    intent.putExtra("contact_id", contactId);
-                    itemView.getContext().startActivity(intent);
-                });
-
-                if ("text".equals(message.getMessageType())) {
-                    tvOtherMessage.setVisibility(View.VISIBLE);
-                    ivOtherImage.setVisibility(View.GONE);
-                    tvOtherMessage.setText(message.getContent());
-                    llOtherFile.setVisibility(View.GONE);
-                } else if ("image".equals(message.getMessageType())) {
-                    // 图片比例 已解决
-                    tvOtherMessage.setVisibility(View.GONE);
-                    ivOtherImage.setVisibility(View.VISIBLE);
-                    llOtherFile.setVisibility(View.GONE);
-//                    otherMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
-//                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
-                    Glide.with(itemView.getContext())
-                            .load(message.getFilePath())
-                            .skipMemoryCache(true) // 跳过内存缓存
-                            .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
-                            .placeholder(R.drawable.default_avatar) // 占位符
-                            .error(R.drawable.default_avatar) // 加载失败时的图片
-                            .listener(new RequestListener<Drawable>() {
-                                @Override
-                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                                    // 加载失败时处理
-                                    return false; // 返回 false 继续让 Glide 显示 error 图片
-                                }
-
-                                @Override
-                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    // 图片加载成功后调整 ImageView 高度
-                                    if (resource != null) {
-                                        int imageWidth = resource.getIntrinsicWidth();
-                                        int imageHeight = resource.getIntrinsicHeight();
-
-                                        // 固定宽度
-                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
-
-                                        // 根据宽度计算高度，保持比例
-                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
-
-                                        // 设置 ImageView 的宽高
-                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
-                                        params.width = fixedWidth;
-                                        params.height = calculatedHeight;
-                                        ivOtherImage.setLayoutParams(params);
-                                    }
-                                    return false; // 返回 false 继续让 Glide 显示图片
-                                }
-                            })
-                            .into(ivOtherImage);
-
-                            ivOtherImage.setOnClickListener(v -> {
-                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
-                                intent.putExtra("image_url", message.getFilePath());
-                                itemView.getContext().startActivity(intent);
-                            });
-                } else if ("file".equals(message.getMessageType())) {
-                    tvOtherMessage.setVisibility(View.GONE);
-                    ivOtherImage.setVisibility(View.GONE);
-                    llOtherFile.setVisibility(View.VISIBLE);
-                    String filePath = message.getFilePath();
-                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
-                    File file = new File(realPath);
-                    tvOtherFileName.setText(message.getFileName());
-                    tvOtherFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
-
-                    llOtherFile.setOnClickListener(v -> {
-                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
-                        intent.putExtra("id", message.getId());
-                        intent.putExtra("file_path", filePath);
-                        intent.putExtra("file_name", file.getName());
-                        intent.putExtra("file_size", file.length());
-                        intent.putExtra("is_me", false);
-                        intent.putExtra("content", message.getContent());
-                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
-                        intent.putExtra("contact_type", "user");
-                        itemView.getContext().startActivity(intent);
-                    });
-                }
+            // 特殊处理对方头像点击
+            if (!isMe) {
+                setupAvatarClick(views.avatar);
             }
         }
 
-        private int dpToPx(Context context, int dp) {
+        private void showTextMessage(MessageViews views, String content) {
+            setViewVisibility(views.textView, View.VISIBLE);
+            setViewVisibility(views.imageView, View.GONE);
+            setViewVisibility(views.fileContainer, View.GONE);
+            views.textView.setText(content);
+        }
+
+        private void showImageMessage(MessageViews views, String imagePath) {
+            setViewVisibility(views.textView, View.GONE);
+            setViewVisibility(views.imageView, View.VISIBLE);
+            setViewVisibility(views.fileContainer, View.GONE);
+
+            loadImageWithRatio(views.imageView, imagePath);
+        }
+
+        private void showFileMessage(MessageViews views, MessageListItem message) {
+            setViewVisibility(views.textView, View.GONE);
+            setViewVisibility(views.imageView, View.GONE);
+            setViewVisibility(views.fileContainer, View.VISIBLE);
+
+            views.fileName.setText(message.getFileName());
+            views.fileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
+        }
+
+        private void setContainerVisible(ViewGroup container, boolean visible) {
+            container.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+
+        private void setViewVisibility(View view, int visibility) {
+            view.setVisibility(visibility);
+        }
+
+        private void loadAvatar(ImageView avatarView, String avatarPath) {
+            Glide.with(avatarView.getContext())
+                    .load(avatarPath)
+                    .apply(new RequestOptions()
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .placeholder(R.drawable.default_avatar)
+                            .error(R.drawable.default_avatar))
+                    .into(avatarView);
+        }
+
+        private void loadImageWithRatio(ImageView imageView, String imagePath) {
+            Glide.with(imageView.getContext())
+                    .load(imagePath)
+                    .addListener(new ImageSizeAdjustListener(imageView))
+                    .into(imageView);
+        }
+
+        private static class ImageSizeAdjustListener implements RequestListener<Drawable> {
+            private final WeakReference<ImageView> imageViewRef;
+            private final int minSizeDp; // 添加可配置参数
+
+            ImageSizeAdjustListener(ImageView imageView) {
+                this(imageView, 100); // 默认 100dp
+            }
+
+            ImageSizeAdjustListener(ImageView imageView, int maxWidthDp) {
+                this.imageViewRef = new WeakReference<>(imageView);
+                this.minSizeDp = maxWidthDp;
+            }
+
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                        Target<Drawable> target, boolean isFirstResource) {
+                Logger.e("ImageSizeAdjustListener", "onLoadFailed: ", e);
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model,
+                                           Target<Drawable> target, DataSource dataSource,
+                                           boolean isFirstResource) {
+                ImageView targetIv = imageViewRef.get();
+                if (targetIv != null && targetIv.getContext() != null && resource != null) {
+                    adjustWithMinSize(targetIv, resource);
+                }
+                return false; // 允许 Glide 继续处理
+            }
+
+            private void adjustWithMinSize(ImageView imageView, Drawable resource) {
+                Context context = imageView.getContext();
+                int imageWidth = resource.getIntrinsicWidth();
+                int imageHeight = resource.getIntrinsicHeight();
+
+                // 处理无效尺寸
+                if (imageWidth <= 0 || imageHeight <= 0) return;
+
+                // 转换为像素值
+                final int minSizePx = dpToPx(context, minSizeDp);
+
+                // 计算比例关系
+                final boolean isWide = imageWidth > imageHeight;
+                final float aspectRatio = (float) imageWidth / imageHeight;
+
+                // 第一阶段：基于比例设置基准维度
+                int baseSize = minSizePx;
+                int calculatedWidth, calculatedHeight;
+
+                if (isWide) {  // 宽图：固定高度为minSize
+                    calculatedHeight = baseSize;
+                    calculatedWidth = (int) (baseSize * aspectRatio);
+                } else {       // 高图或方图：固定宽度为minSize
+                    calculatedWidth = baseSize;
+                    calculatedHeight = (int) (baseSize / aspectRatio);
+                }
+
+                // 第二阶段：强制双维度最小值
+                calculatedWidth = Math.max(calculatedWidth, minSizePx);
+                calculatedHeight = Math.max(calculatedHeight, minSizePx);
+
+                // 最终线程安全更新
+                int finalCalculatedWidth = calculatedWidth;
+                int finalCalculatedHeight = calculatedHeight;
+                imageView.post(() -> {
+                    ViewGroup.LayoutParams params = imageView.getLayoutParams();
+                    params.width = finalCalculatedWidth;
+                    params.height = finalCalculatedHeight;
+                    imageView.setLayoutParams(params);
+                });
+            }
+        }
+
+        private void setupImageClick(ImageView imageView, String imagePath) {
+            imageView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ImageViewActivity.class);
+                intent.putExtra("image_url", imagePath);
+                v.getContext().startActivity(intent);
+            });
+        }
+
+        private void setupFileClick(ViewGroup fileContainer, MessageListItem message, boolean isMe) {
+            fileContainer.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), FileViewActivity.class);
+                intent.putExtra("id", message.getId());
+                intent.putExtra("file_path", message.getFilePath());
+                intent.putExtra("file_name", message.getFileName());
+                intent.putExtra("file_size", message.getFileSize());
+                intent.putExtra("is_me", false);
+                intent.putExtra("content", message.getContent());
+                intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
+                intent.putExtra("contact_type", "user");
+                v.getContext().startActivity(intent);
+            });
+        }
+
+        private void setupAvatarClick(ImageView avatarView) {
+            avatarView.setOnClickListener(v -> {
+                int contactId = ((MessageAdapter) ((RecyclerView) v.getParent()).getAdapter()).getContactId();
+                Intent intent = new Intent(v.getContext(), ContactInfoActivity.class);
+                intent.putExtra("contact_id", contactId);
+                v.getContext().startActivity(intent);
+            });
+        }
+
+        private void clearAllViews() {
+            // 重置我的消息容器
+            resetMessageViews(myViews);
+            myViews.container.setVisibility(View.GONE);
+
+            // 重置对方消息容器
+            resetMessageViews(otherViews);
+            otherViews.container.setVisibility(View.GONE);
+        }
+
+        private void resetMessageViews(MessageViews views) {
+            // 文本消息
+            views.textView.setVisibility(View.GONE);
+            views.textView.setText("");
+
+            // 图片消息
+            views.imageView.setVisibility(View.GONE);
+            views.imageView.setImageDrawable(null); // 清除残留图片
+            Glide.with(views.imageView).clear(views.imageView); // 取消可能存在的 Glide 请求
+
+            // 文件消息
+            views.fileContainer.setVisibility(View.GONE);
+            views.fileName.setText("");
+            views.fileSize.setText("");
+
+            // 头像
+            views.avatar.setImageDrawable(null);
+            Glide.with(views.avatar).clear(views.avatar);
+        }
+
+//        public void bind(MessageListItem message) {
+//            if (message.isMe()) {
+//                // 显示自己的消息
+//                otherMessageContainer.setVisibility(View.GONE);
+//                myMessageContainer.setVisibility(View.VISIBLE);
+//                Glide.with(itemView.getContext())
+//                        .load(myAvatarPath)
+//                        .skipMemoryCache(true) // 跳过内存缓存
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
+//                        .placeholder(R.drawable.default_avatar) // 占位符
+//                        .error(R.drawable.default_avatar) // 加载失败时的图片
+//                        .into(ivMyAvatar);
+//
+//                if ("text".equals(message.getMessageType())) {
+//                    tvMyMessage.setVisibility(View.VISIBLE);
+//                    ivMyImage.setVisibility(View.GONE);
+//                    tvMyMessage.setText(message.getContent());
+//                    llMyFile.setVisibility(View.GONE);
+//                } else if ("image".equals(message.getMessageType())) {
+//                    tvMyMessage.setVisibility(View.GONE);
+//                    ivMyImage.setVisibility(View.VISIBLE);
+//                    llMyFile.setVisibility(View.GONE);
+//
+//                    Glide.with(itemView.getContext())
+//                            .load(message.getFilePath())
+//                            .skipMemoryCache(true) // 跳过内存缓存
+//                            .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
+//                            .placeholder(R.drawable.icon_register) // 占位符
+//                            .error(R.drawable.icon_register) // 加载失败时的图片
+//                            .listener(new RequestListener<Drawable>() {
+//                                @Override
+//                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+//                                    // 加载失败时处理
+//                                    return false; // 返回 false 继续让 Glide 显示 error 图片
+//                                }
+//
+//                                @Override
+//                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+//                                    // 图片加载成功后调整 ImageView 高度
+//                                    if (resource != null) {
+//                                        int imageWidth = resource.getIntrinsicWidth();
+//                                        int imageHeight = resource.getIntrinsicHeight();
+//
+//                                        // 固定宽度
+//                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
+//
+//                                        // 根据宽度计算高度，保持比例
+//                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
+//
+//                                        // 设置 ImageView 的宽高
+//                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
+//                                        params.width = fixedWidth;
+//                                        params.height = calculatedHeight;
+//                                        ivMyImage.setLayoutParams(params);
+//                                    }
+//                                    return false; // 返回 false 继续让 Glide 显示图片
+//                                }
+//                            })
+//                            .into(ivMyImage);
+//
+//                            ivMyImage.setOnClickListener(v -> {
+//                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
+//                                intent.putExtra("image_url", message.getFilePath());
+//                                itemView.getContext().startActivity(intent);
+//                            });
+//                } else if ("file".equals(message.getMessageType())) {
+//                    tvMyMessage.setVisibility(View.GONE);
+//                    ivMyImage.setVisibility(View.GONE);
+//                    llMyFile.setVisibility(View.VISIBLE);
+//                    String filePath = message.getFilePath();
+////                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
+////                    File file = new File(realPath);
+//                    tvMyFileName.setText(message.getFileName());
+//                    tvMyFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
+//
+//                    llMyFile.setOnClickListener(v -> {
+//                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
+//                        intent.putExtra("id", message.getId());
+//                        intent.putExtra("file_path", filePath);
+//                        intent.putExtra("file_name", message.getFileName());
+//                        intent.putExtra("file_size", message.getFileSize());
+//                        intent.putExtra("is_me", true);
+//                        intent.putExtra("content", message.getContent());
+//                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
+//                        intent.putExtra("contact_type", "user");
+//                        itemView.getContext().startActivity(intent);
+//                    });
+//                }
+//            } else {
+//                // 显示对方的消息
+//                myMessageContainer.setVisibility(View.GONE);
+//                otherMessageContainer.setVisibility(View.VISIBLE);
+//
+//                Glide.with(itemView.getContext())
+//                        .load(otherAvatarPath)
+//                        .skipMemoryCache(true) // 跳过内存缓存
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
+//                        .placeholder(R.drawable.default_avatar) // 占位符
+//                        .error(R.drawable.default_avatar) // 加载失败时的图片
+//                        .into(ivOtherAvatar);
+//
+//                ivOtherAvatar.setOnClickListener(v -> {
+//                    int contactId = ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId();
+//                    Intent intent = new Intent(itemView.getContext(), ContactInfoActivity.class);
+//                    intent.putExtra("contact_id", contactId);
+//                    itemView.getContext().startActivity(intent);
+//                });
+//
+//                if ("text".equals(message.getMessageType())) {
+//                    tvOtherMessage.setVisibility(View.VISIBLE);
+//                    ivOtherImage.setVisibility(View.GONE);
+//                    tvOtherMessage.setText(message.getContent());
+//                    llOtherFile.setVisibility(View.GONE);
+//                } else if ("image".equals(message.getMessageType())) {
+//                    // 图片比例 已解决
+//                    tvOtherMessage.setVisibility(View.GONE);
+//                    ivOtherImage.setVisibility(View.VISIBLE);
+//                    llOtherFile.setVisibility(View.GONE);
+////                    otherMessageContent.setLayoutParams(new RelativeLayout.LayoutParams(
+////                            RelativeLayout.LayoutParams.WRAP_CONTENT, 160));
+//                    Glide.with(itemView.getContext())
+//                            .load(message.getFilePath())
+//                            .skipMemoryCache(true) // 跳过内存缓存
+//                            .diskCacheStrategy(DiskCacheStrategy.NONE) // 禁用磁盘缓存
+//                            .placeholder(R.drawable.icon_register) // 占位符
+//                            .error(R.drawable.icon_register) // 加载失败时的图片
+//                            .listener(new RequestListener<Drawable>() {
+//                                @Override
+//                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+//                                    // 加载失败时处理
+//                                    return false; // 返回 false 继续让 Glide 显示 error 图片
+//                                }
+//
+//                                @Override
+//                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+//                                    // 图片加载成功后调整 ImageView 高度
+//                                    if (resource != null) {
+//                                        int imageWidth = resource.getIntrinsicWidth();
+//                                        int imageHeight = resource.getIntrinsicHeight();
+//
+//                                        // 固定宽度
+//                                        int fixedWidth = dpToPx(itemView.getContext(), 100);
+//
+//                                        // 根据宽度计算高度，保持比例
+//                                        int calculatedHeight = (int) ((float) fixedWidth * imageHeight / imageWidth);
+//
+//                                        // 设置 ImageView 的宽高
+//                                        ViewGroup.LayoutParams params = ivMyImage.getLayoutParams();
+//                                        params.width = fixedWidth;
+//                                        params.height = calculatedHeight;
+//                                        ivOtherImage.setLayoutParams(params);
+//                                    }
+//                                    return false; // 返回 false 继续让 Glide 显示图片
+//                                }
+//                            })
+//                            .into(ivOtherImage);
+//
+//                            ivOtherImage.setOnClickListener(v -> {
+//                                Intent intent = new Intent(itemView.getContext(), ImageViewActivity.class);
+//                                intent.putExtra("image_url", message.getFilePath());
+//                                itemView.getContext().startActivity(intent);
+//                            });
+//                } else if ("file".equals(message.getMessageType())) {
+//                    tvOtherMessage.setVisibility(View.GONE);
+//                    ivOtherImage.setVisibility(View.GONE);
+//                    llOtherFile.setVisibility(View.VISIBLE);
+//                    String filePath = message.getFilePath();
+////                    String realPath = StorageHelper.getRealPathFromURI(itemView.getContext(), filePath);
+////                    File file = new File(realPath);
+//                    tvOtherFileName.setText(message.getFileName());
+//                    tvOtherFileSize.setText(StorageHelper.formatFileSize(message.getFileSize()));
+//
+//                    llOtherFile.setOnClickListener(v -> {
+//                        Intent intent = new Intent(itemView.getContext(), FileViewActivity.class);
+//                        intent.putExtra("id", message.getId());
+//                        intent.putExtra("file_path", filePath);
+//                        intent.putExtra("file_name", message.getFileName());
+//                        intent.putExtra("file_size", message.getFileSize());
+//                        intent.putExtra("is_me", false);
+//                        intent.putExtra("content", message.getContent());
+//                        intent.putExtra("contact_id", ((MessageAdapter) ((RecyclerView) itemView.getParent()).getAdapter()).getContactId());
+//                        intent.putExtra("contact_type", "user");
+//                        itemView.getContext().startActivity(intent);
+//                    });
+//                }
+//            }
+//        }
+
+        private static int dpToPx(Context context, int dp) {
             return Math.round(dp * context.getResources().getDisplayMetrics().density);
         }
 

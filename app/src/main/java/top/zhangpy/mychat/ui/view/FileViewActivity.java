@@ -90,13 +90,14 @@ public class FileViewActivity extends AppCompatActivity {
         // TODO 设置文件类型图标
         // ivFileIcon
 
-        boolean isDownloaded = fileViewModel.isFileDownloaded(filePath);
+        boolean isDownloaded = fileViewModel.isFileDownloaded(contactId, messageId, filePath);
         llDownload.setVisibility(View.GONE);
         if (isDownloaded) {
             btnDownload.setVisibility(View.GONE);
             btnOpen.setVisibility(View.VISIBLE);
         } else {
             btnDownload.setVisibility(View.VISIBLE);
+            btnOpen.setVisibility(View.GONE);
             btnOpen.setActivated(false);
         }
         setBind();
@@ -119,7 +120,7 @@ public class FileViewActivity extends AppCompatActivity {
                 btnOpen.setVisibility(View.VISIBLE);
                 btnOpen.setActivated(true);
                 btnDownload.setVisibility(View.GONE);
-                filePath = fileViewModel.getFilePath().getValue();
+                filePath = fileViewModel.getFilePath();
             }
         });
 
@@ -131,7 +132,7 @@ public class FileViewActivity extends AppCompatActivity {
         });
 
         btnOpen.setOnClickListener(v -> {
-            if (filePath == null || filePath.isEmpty()) {
+            if ((filePath == null || filePath.isEmpty()) && (filePath = fileViewModel.getFilePath() == null ? "" : fileViewModel.getFilePath()).isEmpty()) {
                 Toast.makeText(this, "文件无效", Toast.LENGTH_SHORT).show();
                 return;
             }

@@ -28,7 +28,7 @@ public class FileViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> isDownloading = new MutableLiveData<>(false);
 
     @Getter
-    private final MutableLiveData<String> filePath = new MutableLiveData<>(null);
+    private String filePath = null;
 
     public FileViewModel(@NonNull Application application) {
         super(application);
@@ -37,9 +37,23 @@ public class FileViewModel extends AndroidViewModel {
         Logger.enableLogging(true);
     }
 
-    public boolean isFileDownloaded(String filePath) {
-        File file = new File(StorageHelper.getRealPathFromURI(getApplication(), filePath));
-        return file.exists();
+    public boolean isFileDownloaded(int contactId, int messageId , String filePath) {
+        String realPath = StorageHelper.getRealPathFromURI(getApplication(), filePath);
+        if (realPath != null) {
+            File file = new File(realPath);
+            Logger.d("FileViewModel", "isFileDownloaded: realPath=" + realPath);
+            return file.exists();
+        }
+        String tableName = ChatRepository.getTableName(contactId, loadUserId());
+        ChatMessage chatMessage = chatRepository.getMessageById(tableName, messageId);
+        String path = chatMessage.getFilePath();
+        if (path != null) {
+            File file = new File(path);
+            this.filePath = path;
+            Logger.d("FileViewModel", "isFileDownloaded: path=" + path);
+            return file.exists();
+        }
+        return false;
     }
 
     public void downloadFile(int contactId, int messageId, String contactType) {
@@ -54,8 +68,9 @@ public class FileViewModel extends AndroidViewModel {
                 ChatMessage chatMessage = chatRepository.getMessageById(tableName, messageId);
                 isDownloading.postValue(true);
                 String path = chatRepository.downloadFile(getApplication(), String.valueOf(loadUserId()), loadToken(), chatMessage);
+                Logger.d("FileViewModel", "downloadFile: path=" + path);
                 isFileDownloaded.postValue(true);
-                filePath.postValue(path);
+                filePath = path;
             } catch (Exception e) {
                 Logger.e("FileViewModel", "downloadFile: ", e);
             }

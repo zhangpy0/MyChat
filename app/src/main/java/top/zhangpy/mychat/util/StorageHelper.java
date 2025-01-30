@@ -15,6 +15,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
@@ -94,8 +96,7 @@ public class StorageHelper {
             default ->
                     throw new IllegalArgumentException("Invalid directory type: " + directoryType);
         };
-
-        // 根据类型获取目录
+        fileName = decodeFileName(fileName);
 
         // 创建目标文件
         File targetFile = new File(targetDir, fileName);
@@ -194,7 +195,13 @@ public class StorageHelper {
 
     // 将 content:// URI 转换为真实路径
     public static String getRealPathFromURI(Context context, String uriString) {
-        Uri uri = Uri.parse(uriString);
+        Uri uri = null;
+        try {
+            uri = Uri.parse(uriString);
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Invalid URI: " + uriString);
+            return uriString;
+        }
         Logger.initialize(context);
         Logger.enableLogging(true);
         Logger.d("StorageHelper", "Processing URI: " + uri.toString());
@@ -444,5 +451,13 @@ public class StorageHelper {
         return formattedSize;
     }
 
-
+    public static String decodeFileName(String encodedName) {
+        try {
+            // 使用 UTF-8 解码（需确保编码一致性）
+            return URLDecoder.decode(encodedName, StandardCharsets.UTF_8.name());
+        } catch (Exception e) {
+            Logger.e("StorageHelper", "Failed to decode file name: " + e.getMessage());
+            return encodedName; // 解码失败返回原始值
+        }
+    }
 }
