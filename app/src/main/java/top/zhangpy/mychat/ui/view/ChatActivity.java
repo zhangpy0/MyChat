@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 import top.zhangpy.mychat.R;
+import top.zhangpy.mychat.data.service.DownloadService;
 import top.zhangpy.mychat.ui.adapter.MessageAdapter;
 import top.zhangpy.mychat.ui.viewmodel.ChatViewModel;
 import top.zhangpy.mychat.util.HideKeyboard;
@@ -94,17 +95,27 @@ public class ChatActivity extends AppCompatActivity {
         contactId = getIntent().getIntExtra("contact_id", -1);
         Logger.d("ChatActivity", "contactId: " + contactId);
 
+        DownloadService.startService(this, contactId);
+
         // 注册 ActivityResultLauncher
         imagePreviewLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri selectedImageUri = result.getData().getData();
+                        Logger.d("ChatActivity", "selectedImageUri: " + selectedImageUri);
                         if (selectedImageUri != null) {
-                            viewModel.sendMessageToFriend(contactId, "", "image", String.valueOf(selectedImageUri));
+                            String path = StorageHelper.getRealPathFromURI(this, selectedImageUri.toString());
+                            if (path == null) {
+                                path = selectedImageUri.getPath();
+                            }
+                            Logger.d("ChatActivity", "path: " + path);
+                            viewModel.sendMessageToFriend(contactId, "", "image", path);
+                        } else {
+                            Toast.makeText(this, "无法获取图片路径", Toast.LENGTH_SHORT).show();
                         }
-                        // 从 ImagePreviewActivity 返回，更新消息
-//                        viewModel.updateMessagesFromLocal(contactId);
+                    } else {
+                        Toast.makeText(this, "未选择图片", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -206,13 +217,29 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setBind(Integer contactId) {
 
-        // 监听ViewModel中的数据变化
+//        // 监听ViewModel中的数据变化
+//        viewModel.getMessages().observe(this, messages -> {
+//            adapter.getMessages().clear();
+//            adapter.getMessages().addAll(messages);
+//            // TODO 优化
+//            adapter.notifyDataSetChanged();
+//            recyclerView.scrollToPosition(messages.size() - 1);
+//        });
         viewModel.getMessages().observe(this, messages -> {
             adapter.getMessages().clear();
             adapter.getMessages().addAll(messages);
-            // TODO 优化
-            adapter.notifyDataSetChanged();
-            recyclerView.scrollToPosition(messages.size() - 1);
+
+            // 优化更新方式
+            adapter.notifyItemRangeChanged(0, messages.size());
+
+            // 延迟滚动确保布局完成
+            recyclerView.post(() -> {
+                if (messages.size() > 0) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(messages.size() - 1, 0);
+                    layoutManager.setStackFromEnd(true);
+                }
+            });
         });
 
         // 发送按钮事件
