@@ -28,6 +28,9 @@ public interface ContactDao {
     @Update
     public void updateContactApply(ContactApply contactApply);
 
+    @Update
+    public void updateContactApplies(List<ContactApply> contactApplies);
+
     @Delete
     public void deleteContactApply(ContactApply contactApply);
 

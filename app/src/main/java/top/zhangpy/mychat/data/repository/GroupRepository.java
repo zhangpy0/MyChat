@@ -1,12 +1,18 @@
 package top.zhangpy.mychat.data.repository;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -128,6 +134,33 @@ public class GroupRepository {
             newGroupInfo.setGroupName(groupInfoModel.getGroupName());
             newGroupInfo.setAnnouncement(groupInfoModel.getAnnouncement());
             updateGroupInfo(newGroupInfo);
+        }
+    }
+
+    // GroupRepository.java
+    public void batchFetchAndCacheGroups(String token, Integer userId, List<Integer> groupIds, Context context) {
+        if (groupIds == null || groupIds.isEmpty()) return;
+        int concurrency = 4;
+        ExecutorService executor = Executors.newFixedThreadPool(concurrency);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (Integer groupId : groupIds) {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    updateGroupInfoFromServer(token, userId, groupId, context);
+                } catch (IOException | RuntimeException e) {
+                    Log.e("GroupRepository", "Failed to fetch group: " + groupId, e);
+                }
+            }, executor);
+            futures.add(future);
+        }
+
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            Log.e("GroupRepository", "Batch fetch groups timeout or error", e);
+        } finally {
+            executor.shutdown();
         }
     }
 }

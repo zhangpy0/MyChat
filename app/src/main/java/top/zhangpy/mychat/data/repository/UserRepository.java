@@ -2,10 +2,15 @@ package top.zhangpy.mychat.data.repository;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -175,6 +180,26 @@ public class UserRepository {
             newProfile.setAvatarPath(oldUserProfile.getAvatarPath());
             updateUserProfile(newProfile);
         }
+    }
+
+    // UserRepository（使用ExecutorService实现并发）
+    public void batchFetchAndCacheUsers(String token, Integer userId, List<Integer> userIds, Context context) {
+        ExecutorService executor = Executors.newFixedThreadPool(4); // 控制并发数
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (Integer fId : userIds) {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    updateUserInfoFromServer(token, userId, fId, context);
+                } catch (IOException e) {
+                    Log.e("UserRepository", "Failed to fetch user: " + userId, e);
+                }
+            }, executor);
+            futures.add(future);
+        }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        executor.shutdown();
     }
 
     public boolean check(String token, RequestMapModel requestMapModel) throws IOException {

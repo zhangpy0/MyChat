@@ -44,4 +44,8 @@ public class ApplyListItem {
                 break;
         }
     }
+
+    public int compareTo(ApplyListItem applyListItem) {
+        return Long.compare(applyListItem.getAbsTime(), this.absTime);
+    }
 }
