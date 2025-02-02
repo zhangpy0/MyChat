@@ -5,13 +5,17 @@ import static top.zhangpy.mychat.util.Constants.SERVER_IP;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.os.IBinder;
+import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -37,6 +41,7 @@ import top.zhangpy.mychat.data.remote.model.RequestMapModel;
 import top.zhangpy.mychat.data.remote.model.ServerMessageModel;
 import top.zhangpy.mychat.data.repository.ChatRepository;
 import top.zhangpy.mychat.data.repository.ContactRepository;
+import top.zhangpy.mychat.ui.view.AppStartActivity;
 import top.zhangpy.mychat.util.Logger;
 
 public class MessageService extends Service {
@@ -85,7 +90,7 @@ public class MessageService extends Service {
             return;
         }
 
-        startForeground(1, getNotification("Connecting to server..."));
+        startForeground(1, getNotification("已连接服务器"));
 
         // 开始 WebSocket 连接
         connectWebSocket();
@@ -143,10 +148,10 @@ public class MessageService extends Service {
 
     private Notification getNotification(String contentText) {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Message Service")
+                .setContentTitle("消息服务")
                 .setContentText(contentText)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
     }
 
@@ -369,13 +374,27 @@ public class MessageService extends Service {
         unreadMessageSenders.add(Integer.parseInt(senderId));
         String contentText = unreadMessageSenders.size() + "个联系人发来了" + totalUnreadMessages + "条消息";
 
+        // 创建悬浮通知意图（可选，根据需求）
+        Intent fullScreenIntent = new Intent(this, AppStartActivity.class);
+        fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0,
+                fullScreenIntent, PendingIntent.FLAG_IMMUTABLE);
+
         Notification notification = new NotificationCompat.Builder(this, "MESSAGE_CHANNEL")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("新消息")
                 .setContentText(contentText)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(contentText))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX) // 最高优先级
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                .setVibrate(new long[]{0, 500, 250, 500})
+                .setLights(Color.BLUE, 500, 2000) // LED灯设置
+                .setFullScreenIntent(fullScreenPendingIntent, true) // 强制显示为悬浮通知
+                .addAction(R.drawable.ic_open, "立即查看", fullScreenPendingIntent)
+                .setTimeoutAfter(3000)
                 .build();
 
         notificationManager.notify(1, notification);
@@ -388,6 +407,15 @@ public class MessageService extends Service {
                 NotificationManager.IMPORTANCE_HIGH
         );
         channel.setDescription("Notifications for new messages");
+        // 设置悬浮通知参数
+        channel.enableVibration(true);
+        channel.setVibrationPattern(new long[]{0, 500, 250, 500}); // 震动模式：立即+500ms延迟+250ms震动+500ms延迟
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); // 锁屏可见
+        channel.setSound(Settings.System.DEFAULT_NOTIFICATION_URI,
+                new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build());
         notificationManager.createNotificationChannel(channel);
     }
 

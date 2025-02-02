@@ -20,12 +20,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.ui.adapter.ChatListAdapter;
 import top.zhangpy.mychat.ui.viewmodel.WeixinViewModel;
+import top.zhangpy.mychat.util.DoubleSwipeBackHelper;
 
 @SuppressLint("ValidFragment")
 public class WeixinFragment extends Fragment {
     private WeixinViewModel viewModel;
     private RecyclerView messageList;
     private ChatListAdapter adapter;
+
+    private DoubleSwipeBackHelper swipeBackHelper;
 
     @Nullable
     @Override
@@ -37,6 +40,8 @@ public class WeixinFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        swipeBackHelper = new DoubleSwipeBackHelper(getActivity());
 
         // 初始化视图
 //        TextView title = view.findViewById(R.id.weixin_title);

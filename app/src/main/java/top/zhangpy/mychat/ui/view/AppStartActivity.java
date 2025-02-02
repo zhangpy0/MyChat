@@ -14,7 +14,6 @@ public class AppStartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_start);
 
-        // Delay 2 seconds to show the app start page
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -22,6 +21,6 @@ public class AppStartActivity extends Activity {
                 startActivity(intent);
                 finish();
             }
-        }, 1000);
+        }, 200);
     }
 }

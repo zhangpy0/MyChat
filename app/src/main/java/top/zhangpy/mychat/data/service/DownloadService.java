@@ -66,6 +66,8 @@ public class DownloadService extends IntentService {
                 downloadImage(message, currentUserId, token);
             }
         }
+
+        notifyUIUpdate(contactId);
     }
 
     private void addMessagesFromTable(List<ChatMessage> messages, String tableName) {
@@ -110,5 +112,11 @@ public class DownloadService extends IntentService {
     private String loadToken() {
         SharedPreferences prefs = getApplication().getApplicationContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         return prefs.getString("auth_token", null);
+    }
+
+    private void notifyUIUpdate(Integer contactId) {
+        Intent intent = new Intent("top.zhangpy.mychat.UPDATE_MESSAGES")
+                .putExtra("contact_id", contactId);
+        sendBroadcast(intent);
     }
 }
