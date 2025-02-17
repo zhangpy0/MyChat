@@ -71,7 +71,8 @@
             android:name=".ui.view.AddFriendActivity"
             android:exported="true" />
         <activity android:name=".ui.view.ContactInfoActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity android:name=".ui.view.ChatActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="true" />

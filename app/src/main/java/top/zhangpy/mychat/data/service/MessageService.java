@@ -113,6 +113,21 @@ public class MessageService extends Service {
         return null;
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // 返回 START_STICKY 让系统尝试重启服务
+        return START_STICKY;
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        // 任务被移除时重启服务
+        Intent restartService = new Intent(this, MessageService.class);
+        restartService.setPackage(getPackageName());
+        startService(restartService);
+        super.onTaskRemoved(rootIntent);
+    }
+
     public Integer loadUserId() {
         SharedPreferences prefs = getApplicationContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         return prefs.getInt("user_id", -1);
