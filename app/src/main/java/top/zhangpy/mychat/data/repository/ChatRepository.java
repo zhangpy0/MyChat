@@ -1,6 +1,8 @@
 package top.zhangpy.mychat.data.repository;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +34,8 @@ import top.zhangpy.mychat.ui.model.ChatListItem;
 import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
+import top.zhangpy.mychat.util.download.ProgressInputStream;
+import top.zhangpy.mychat.util.download.ProgressListener;
 
 public class ChatRepository {
     private final DynamicChatDao chatDao;
@@ -176,15 +180,35 @@ public class ChatRepository {
     }
 
     public DownloadModel downloadFile(String userId, String messageId, String token) throws IOException {
-        Response<ResponseBody> response = chatService.downloadFile(userId, messageId, token).execute();
+        Response<ResponseBody> response = chatService.downloadFile(userId, messageId, token).execute(); // 此时仅完成了 HTTP 响应头（Header）的接收，响应体（Body）数据 尚未开始传输。
         if (response.isSuccessful() && response.body() != null) {
             String fileName = response.headers().get("Content-Disposition").split("filename=")[1];
-            InputStream is = response.body().byteStream();
+            InputStream is = response.body().byteStream(); // 未缓冲的原始输入流
 //            is.close();
             return new DownloadModel(fileName, is);
         } else {
             throw new RuntimeException("failed to download file");
         }
+    }
+
+    public DownloadModel downloadFileWithProgress(String userId, String messageId, String token, ProgressListener listener) throws IOException {
+        try {
+            Response<ResponseBody> response = chatService.downloadFile(userId, messageId, token).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String fileName = response.headers().get("Content-Disposition").split("filename=")[1];
+                long totalBytes = response.body().contentLength();
+                InputStream rawStream = response.body().byteStream();
+                InputStream progressStream = new ProgressInputStream(rawStream, totalBytes, listener);
+                return new DownloadModel(fileName, progressStream);
+            } else {
+                throw new RuntimeException("failed to download file");
+            }
+        } catch (IOException e) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    listener.onError(e);
+                });
+        }
+        return null;
     }
 
     public String downloadFile(Context context, String userId, String token, ChatMessage message) {
@@ -209,6 +233,34 @@ public class ChatRepository {
                 Logger.e("ChatRepository", "download file failed", e);
             }
 
+        return path[0];
+    }
+
+    // TODO saveFile listener 回调
+    public String downloadFileWithProgress(Context context,
+                                           String userId,
+                                           String token,
+                                           ChatMessage message,
+                                           ProgressListener listener) {
+        String messageId = String.valueOf(message.getFileId());
+        final String[] path = {null};
+        try {
+            DownloadModel downloadModel = downloadFileWithProgress(userId, messageId, token, listener);
+            if (downloadModel == null) {
+                return null;
+            }
+            if (message.getReceiverType().equals("user")) {
+                path[0] = StorageHelper.saveFile(context, "chat", String.valueOf(message.getReceiverId()), String.valueOf(message.getSenderId()), downloadModel.getFileName(), downloadModel.getInputStream());
+            } else {
+                path[0] = StorageHelper.saveFile(context, "chat_group", String.valueOf(message.getReceiverId()), String.valueOf(message.getGroupId()), downloadModel.getFileName(), downloadModel.getInputStream());
+            }
+            message.setFilePath(path[0]);
+            message.setIsRead(true);
+            message.setIsDownload(true);
+            updateMessage(getTableName(message), message);
+        } catch (IOException e) {
+            Logger.e("ChatRepository", "download file failed", e);
+        }
         return path[0];
     }
 
