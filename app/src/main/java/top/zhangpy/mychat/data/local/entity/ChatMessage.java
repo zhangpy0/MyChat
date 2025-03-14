@@ -53,4 +53,9 @@ public class ChatMessage {
 
     @ColumnInfo(name = "is_download")
     private Boolean isDownload;
+
+    @Override
+    public int hashCode() {
+        return messageId;
+    }
 }

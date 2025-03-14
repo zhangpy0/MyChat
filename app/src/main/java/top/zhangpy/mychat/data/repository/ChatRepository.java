@@ -36,6 +36,7 @@ import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
 import top.zhangpy.mychat.util.download.ProgressInputStream;
 import top.zhangpy.mychat.util.download.ProgressListener;
+import top.zhangpy.mychat.util.lock.ConcurrentLock;
 
 public class ChatRepository {
     private final DynamicChatDao chatDao;
@@ -138,6 +139,7 @@ public class ChatRepository {
 
 
     // no file: path set null
+    @ConcurrentLock(params = {0, 1, 2, 3, 4, 5, 6})
     public boolean sendMessage(String userId, String receiverId, String groupId, String receiverType, String content, String messageType, String token, String path) throws IOException {
         File file = null;
         MultipartBody.Part filePart = null;
@@ -191,6 +193,7 @@ public class ChatRepository {
         }
     }
 
+
     public DownloadModel downloadFileWithProgress(String userId, String messageId, String token, ProgressListener listener) throws IOException {
         try {
             Response<ResponseBody> response = chatService.downloadFile(userId, messageId, token).execute();
@@ -237,6 +240,7 @@ public class ChatRepository {
     }
 
     // TODO saveFile listener 回调
+    @ConcurrentLock(params = {1, 3})
     public String downloadFileWithProgress(Context context,
                                            String userId,
                                            String token,
