@@ -2,6 +2,9 @@ package top.zhangpy.mychat.data.remote;
 
 import static top.zhangpy.mychat.util.Constants.SERVER_IP;
 
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import top.zhangpy.mychat.data.remote.api.ChatService;
@@ -14,8 +17,15 @@ import top.zhangpy.mychat.data.remote.api.UserProfileService;
 public class RetrofitClient {
     private static final String BASE_URL = "http://" + SERVER_IP + ":8080/api/";
 
+    private static final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build();
+
     private static final Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 

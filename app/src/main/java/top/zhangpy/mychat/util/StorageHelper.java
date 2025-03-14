@@ -206,7 +206,7 @@ public class StorageHelper {
         Logger.enableLogging(true);
         Logger.d("StorageHelper", "Processing URI: " + uri.toString());
 
-        // 优化点：使用提前返回减少嵌套层级
+        // 优化点：提前返回减少嵌套层级
         if ("file".equalsIgnoreCase(uri.getScheme())) {
             Logger.d("StorageHelper", "Handling file URI: " + uri);
             return uri.getPath().replaceAll("%20", " ");
