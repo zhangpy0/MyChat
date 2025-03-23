@@ -1,0 +1,230 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- 他人消息容器（群聊版） -->
+    <LinearLayout
+        android:id="@+id/other_message_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <!-- 发送者信息 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="48dp"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:id="@+id/tv_sender_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:maxWidth="200dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="对方昵称" />
+
+        </LinearLayout>
+
+        <!-- 消息内容容器 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- 头像 -->
+            <ImageView
+                android:id="@+id/iv_other_avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/default_avatar"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="8dp" />
+
+            <!-- 对方的消息内容 -->
+            <LinearLayout
+                android:id="@+id/other_message_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:orientation="vertical">
+
+                <!-- 文字消息 -->
+                <TextView
+                    android:id="@+id/tv_other_message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:background="@drawable/chat_base_t"
+                    android:textIsSelectable="true"
+                    android:text="对方的消息"
+                    android:visibility="gone" />
+
+                <!-- 图片消息 -->
+                <ImageView
+                    android:id="@+id/iv_other_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:maxWidth="300dp"
+                    android:maxHeight="300dp" />
+
+                <!-- 文件消息 -->
+                <LinearLayout
+                    android:id="@+id/ll_other_file"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="visible"
+                    android:background="@android:color/background_light"
+                    android:paddingTop="8dp">
+
+                    <!-- 文件信息左侧 -->
+                    <LinearLayout
+                        android:layout_width="160dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingEnd="8dp">
+
+                        <!-- 文件名 -->
+                        <TextView
+                            android:id="@+id/tv_other_file_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@android:color/black"
+                            android:textSize="18sp"
+                            android:text="文件名" />
+
+                        <!-- 文件大小 -->
+                        <TextView
+                            android:id="@+id/tv_other_file_size"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@android:color/darker_gray"
+                            android:textSize="12sp"
+                            android:text="文件大小: 2MB" />
+                    </LinearLayout>
+
+                    <!-- 文件图标 -->
+                    <ImageView
+                        android:id="@+id/iv_other_file_icon"
+                        android:layout_width="45dp"
+                        android:layout_height="45dp"
+                        android:src="@drawable/ic_file"
+                        />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!-- 自己的消息 -->
+    <RelativeLayout
+        android:id="@+id/my_message_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:visibility="gone">
+
+        <!-- 自己头像 -->
+        <ImageView
+            android:id="@+id/iv_my_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/default_avatar"
+            android:scaleType="centerCrop"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp" />
+
+        <!-- 自己的消息内容 -->
+        <LinearLayout
+            android:id="@+id/my_message_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:orientation="vertical"
+            android:layout_toStartOf="@id/iv_my_avatar"
+            android:layout_alignParentTop="true">
+
+            <!-- 文字消息 -->
+            <TextView
+                android:id="@+id/tv_my_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textIsSelectable="true"
+                android:background="@drawable/chat_base" />
+
+            <!-- 图片消息 -->
+            <ImageView
+                android:id="@+id/iv_my_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:scaleType="fitCenter"
+                android:adjustViewBounds="true"
+                android:maxWidth="300dp"
+                android:maxHeight="300dp" />
+
+            <!-- 文件消息 -->
+            <LinearLayout
+                android:id="@+id/ll_my_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                android:paddingTop="8dp">
+
+                <!-- 文件信息左侧 -->
+                <LinearLayout
+                    android:layout_width="160dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <!-- 文件名 -->
+                    <TextView
+                        android:id="@+id/tv_my_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp"
+                        android:text="文件名" />
+
+                    <!-- 文件大小 -->
+                    <TextView
+                        android:id="@+id/tv_my_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="12sp"
+                        android:text="文件大小: 2MB" />
+                </LinearLayout>
+
+                <!-- 文件图标 -->
+                <ImageView
+                    android:id="@+id/iv_my_file_icon"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/ic_file"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>
