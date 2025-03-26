@@ -2,6 +2,7 @@ package top.zhangpy.mychat.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -139,5 +141,27 @@ public class PermissionUtils {
                 activity.startActivityForResult(intent, NOTIFICATION_PERMISSION_REQUEST_CODE);
             }
         }
+    }
+
+    // 电池白名单
+    public static boolean isIgnoringBatteryOptimizations(Context context) {
+        String packageName = context.getPackageName();
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        if (powerManager != null) {
+            return powerManager.isIgnoringBatteryOptimizations(packageName);
+        }
+        return false;
+    }
+
+    public static void requestIgnoreBatteryOptimizations(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("提示");
+        builder.setMessage("请将应用加入电池白名单，以确保消息能够及时推送。");
+        builder.setPositiveButton("确定", (dialog, which) -> {
+            Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + context.getPackageName()));
+            context.startActivity(intent);
+        });
+        builder.setNegativeButton("取消", (dialog, which) -> dialog.dismiss());
     }
 }

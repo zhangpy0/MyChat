@@ -43,9 +43,12 @@ android {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
 
-    implementation 'androidx.annotation:annotation:1.6.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+
+    // https://mvnrepository.com/artifact/androidx.work/work-runtime-ktx
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
 
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok

@@ -57,6 +57,9 @@ public class ChatListActivity extends FragmentActivity {
         if (!PermissionUtils.isNotificationPermissionGranted(this)) {
             PermissionUtils.requestNotificationPermission(this);
         }
+        if (!PermissionUtils.isIgnoringBatteryOptimizations(this)) {
+            PermissionUtils.requestIgnoreBatteryOptimizations(this);
+        }
     }
 
     @Override

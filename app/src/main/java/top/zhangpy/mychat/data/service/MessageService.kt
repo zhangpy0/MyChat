@@ -16,6 +16,11 @@ import android.os.IBinder
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -88,6 +93,9 @@ class MessageService : Service() {
         registerReceiver(clearNotificationReceiver, clearFilter, Context.RECEIVER_NOT_EXPORTED)
 
         updateNotificationForNew()
+
+        // 启动 WorkManager 定时任务
+        scheduleServiceCheck()
     }
 
     override fun onBind(intent: Intent): IBinder? = null
@@ -125,6 +133,8 @@ class MessageService : Service() {
         super.onDestroy()
         webSocket?.close(1000, "Service destroyed")
         unregisterReceiver(clearNotificationReceiver)
+        // 服务销毁时重新调度检查任务
+        scheduleServiceCheck()
         Logger.i(TAG, "MessageService stopped and receiver unregistered")
     }
 
@@ -390,6 +400,24 @@ class MessageService : Service() {
         unreadMessageSenders.clear()
         notificationManager.cancel(1)
         Logger.i(TAG, "Notifications cleared and unread message count reset")
+    }
+
+    private fun scheduleServiceCheck() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED) // 仅在网络可用时执行（可选）
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<ServiceCheckWorker>(
+            15, TimeUnit.MINUTES // 最小间隔15分钟（实际可能受系统限制）
+        ).setConstraints(constraints)
+            .build()
+
+        // 唯一任务，避免重复
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "MessageServiceKeepAlive",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            workRequest
+        )
     }
 
     companion object {
