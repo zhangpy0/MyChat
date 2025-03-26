@@ -11,8 +11,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.media.AudioAttributes
+import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -56,6 +58,7 @@ class MessageService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate() {
         super.onCreate()
 

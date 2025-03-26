@@ -31,6 +31,7 @@ import top.zhangpy.mychat.data.remote.model.ChatMessageModel;
 import top.zhangpy.mychat.data.remote.model.DownloadModel;
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 import top.zhangpy.mychat.ui.model.ChatListItem;
+import top.zhangpy.mychat.ui.model.GroupMessageListItem;
 import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
@@ -482,6 +483,37 @@ public class ChatRepository {
             messageListItem.setFilePath(message.getFilePath());
             messageListItem.setMe(message.getSenderId().equals(userId));
             messageListItem.setSendTime(message.getSendTime());
+            messageListItems.add(messageListItem);
+        }
+        return messageListItems;
+    }
+
+    public List<GroupMessageListItem> updateGroupMessagesFromLocal(Integer userId, Integer groupId, String token) throws IOException {
+        String tableName = getTableName(groupId);
+        List<ChatMessage> messages = getMessages(tableName);
+        List<GroupMessageListItem> messageListItems = new ArrayList<>();
+        for (ChatMessage message : messages) {
+            GroupMessageListItem messageListItem = new GroupMessageListItem();
+            if (message.getMessageType().equals("file")) {
+                messageListItem.setFileName(message.getFileName());
+                String content = message.getContent();
+                String[] split = content.split(":");
+                Long fileSize = Long.parseLong(split[split.length - 1]);
+                messageListItem.setFileSize(fileSize);
+            } else {
+                messageListItem.setFileName(null);
+                messageListItem.setFileSize(0L);
+            }
+            messageListItem.setId(message.getMessageId());
+            messageListItem.setSenderId(message.getSenderId());
+            messageListItem.setContent(message.getContent());
+            messageListItem.setMessageType(message.getMessageType());
+            messageListItem.setFilePath(message.getFilePath());
+//            messageListItem.setMe(message.getSenderId().equals(userId));
+            messageListItem.setSendTime(message.getSendTime());
+
+            UserProfile userProfile = userRepository.getUserProfileById(message.getSenderId());
+            messageListItem.setSenderName(userProfile.getNickname());
             messageListItems.add(messageListItem);
         }
         return messageListItems;
