@@ -20,18 +20,22 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import top.zhangpy.mychat.R;
 import top.zhangpy.mychat.data.service.DownloadService;
 import top.zhangpy.mychat.ui.adapter.MessageAdapter;
+import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.ui.viewmodel.ChatViewModel;
 import top.zhangpy.mychat.util.HideKeyboard;
 import top.zhangpy.mychat.util.Logger;
 import top.zhangpy.mychat.util.StorageHelper;
+import top.zhangpy.mychat.util.diff.ItemDiffCallback;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -226,11 +230,17 @@ public class ChatActivity extends AppCompatActivity {
 //            recyclerView.scrollToPosition(messages.size() - 1);
 //        });
         viewModel.getMessages().observe(this, messages -> {
-            adapter.getMessages().clear();
-            adapter.getMessages().addAll(messages);
-
-            // 优化更新方式
-            adapter.notifyItemRangeChanged(0, messages.size());
+            // 使用 DiffUtil 进行数据更新
+            List<MessageListItem> oldMessages = adapter.getMessages();
+            ItemDiffCallback diffCallback = new ItemDiffCallback();
+            ItemDiffCallback.MessageDiffCallback messageDiffCallback = diffCallback.new MessageDiffCallback(oldMessages, messages);
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(messageDiffCallback);
+            diffResult.dispatchUpdatesTo(adapter);
+//            adapter.getMessages().clear();
+//            adapter.getMessages().addAll(messages);
+//
+//            // 优化更新方式
+//            adapter.notifyItemRangeChanged(0, messages.size());
 
             // 延迟滚动确保布局完成
             recyclerView.post(() -> {
