@@ -1,122 +1,130 @@
-package top.zhangpy.mychat.data.service;
+package top.zhangpy.mychat.data.service
 
-import android.app.IntentService;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.app.IntentService
+import android.content.Context
+import android.content.Intent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import top.zhangpy.mychat.data.local.entity.ChatMessage
+import top.zhangpy.mychat.data.repository.ChatRepository
+import top.zhangpy.mychat.util.Logger
+import top.zhangpy.mychat.util.threadpool.AppExecutors
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+class DownloadService : IntentService("ImageDownloadService") {
+    private var chatRepository: ChatRepository? = null
 
-import top.zhangpy.mychat.data.local.entity.ChatMessage;
-import top.zhangpy.mychat.data.repository.ChatRepository;
-import top.zhangpy.mychat.util.Logger;
-
-public class DownloadService extends IntentService {
-
-    private static final String TAG = "DownloadService";
-    public static final String EXTRA_CONTACT_ID = "contact_id";
-
-    private ChatRepository chatRepository;
-
-    public DownloadService() {
-        super("ImageDownloadService");
+    override fun onCreate() {
+        super.onCreate()
+        val context = applicationContext
+        Logger.initialize(context)
+        Logger.enableLogging(true)
+        chatRepository = ChatRepository(context)
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Context context = getApplicationContext();
-        Logger.initialize(context);
-        Logger.enableLogging(true);
-        chatRepository = new ChatRepository(context);
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
+    override fun onHandleIntent(intent: Intent?) {
         if (intent == null) {
-            Logger.e(TAG, "Received null intent");
-            return;
+            Logger.e(TAG, "Received null intent")
+            return
         }
 
-        int contactId = intent.getIntExtra(EXTRA_CONTACT_ID, -1);
+        val contactId = intent.getIntExtra(EXTRA_CONTACT_ID, -1)
         if (contactId == -1) {
-            Logger.e(TAG, "Invalid contact ID provided");
-            return;
+            Logger.e(TAG, "Invalid contact ID provided")
+            return
         }
 
         // 获取当前用户信息
-        int currentUserId = loadUserId();
-        String token = loadToken();
+        val currentUserId = loadUserId()
+        val token = loadToken()
         if (currentUserId == 0 || token == null) {
-            Logger.e(TAG, "User not authenticated");
-            return;
+            Logger.e(TAG, "User not authenticated")
+            return
         }
 
-        String tableName = ChatRepository.getTableName(contactId, currentUserId);
+        val appExecutors = AppExecutors.get()
+        val coroutineScope: CoroutineScope = appExecutors.databaseIODispatch() as CoroutineScope
 
-        List<ChatMessage> allMessages = new ArrayList<>();
+        val tableName = ChatRepository.getTableName(contactId, currentUserId)
 
-        addMessagesFromTable(allMessages, tableName);
+        val allMessages: MutableList<ChatMessage> = ArrayList()
+
+        coroutineScope.launch() {
+            addMessagesFromTable(allMessages, tableName)
+            allMessages.forEach { message ->
+                if (isImagePendingDownload(message)) {
+                    launch(appExecutors.networkIODispatch()) {
+                        downloadImage(message, currentUserId, token)
+                    }
+                }
+            }
+        }
+
+//        addMessagesFromTable(allMessages, tableName)
 
         // 处理未下载的图片消息
-        for (ChatMessage message : allMessages) {
-            if (isImagePendingDownload(message)) {
-                downloadImage(message, currentUserId, token);
-            }
-        }
+//        for (message in allMessages) {
+//            if (isImagePendingDownload(message)) {
+//                downloadImage(message, currentUserId, token)
+//            }
+//        }
 
-        notifyUIUpdate(contactId);
+        notifyUIUpdate(contactId)
     }
 
-    private void addMessagesFromTable(List<ChatMessage> messages, String tableName) {
-        if (chatRepository.isTableExist(tableName)) {
-            List<ChatMessage> tableMessages = chatRepository.getMessages(tableName);
+    private fun addMessagesFromTable(messages: MutableList<ChatMessage>, tableName: String) {
+        if (chatRepository!!.isTableExist(tableName)) {
+            val tableMessages = chatRepository!!.getMessages(tableName)
             if (tableMessages != null) {
-                messages.addAll(tableMessages);
+                messages.addAll(tableMessages)
             }
         }
     }
 
-    private boolean isImagePendingDownload(ChatMessage message) {
-        return "image".equals(message.getMessageType()) && !message.getIsDownload();
+    private fun isImagePendingDownload(message: ChatMessage): Boolean {
+        return "image" == message.messageType && !message.isDownload
     }
 
-    private void downloadImage(ChatMessage message, int currentUserId, String token) {
+    private fun downloadImage(message: ChatMessage, currentUserId: Int, token: String) {
         try {
-            chatRepository.downloadImage(
-                    getApplicationContext(),
-                    String.valueOf(currentUserId),
-                    token,
-                    message
-            );
-            Logger.d(TAG, "Successfully downloaded image for message: " + message.getMessageId());
-        } catch (IOException e) {
-            Logger.e(TAG, "Failed to download image for message: " + message.getMessageId(), e);
+            chatRepository!!.downloadImage(
+                applicationContext,
+                currentUserId.toString(),
+                token,
+                message
+            )
+            Logger.d(TAG, "Successfully downloaded image for message: " + message.messageId)
+        } catch (e: IOException) {
+            Logger.e(TAG, "Failed to download image for message: " + message.messageId, e)
         }
     }
 
-    // 启动Service的辅助方法
-    public static void startService(Context context, int contactId) {
-        Intent intent = new Intent(context, DownloadService.class);
-        intent.putExtra(EXTRA_CONTACT_ID, contactId);
-        context.startService(intent);
+    private fun loadUserId(): Int {
+        val prefs = applicationContext.getSharedPreferences("user_prefs", MODE_PRIVATE)
+        return prefs.getInt("user_id", -1)
     }
 
-    private Integer loadUserId() {
-        SharedPreferences prefs = getApplication().getApplicationContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        return prefs.getInt("user_id", -1);
+    private fun loadToken(): String? {
+        val prefs = applicationContext.getSharedPreferences("user_prefs", MODE_PRIVATE)
+        return prefs.getString("auth_token", null)
     }
 
-    private String loadToken() {
-        SharedPreferences prefs = getApplication().getApplicationContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        return prefs.getString("auth_token", null);
+    private fun notifyUIUpdate(contactId: Int) {
+        val intent = Intent("top.zhangpy.mychat.UPDATE_MESSAGES")
+            .putExtra("contact_id", contactId)
+        sendBroadcast(intent)
     }
 
-    private void notifyUIUpdate(Integer contactId) {
-        Intent intent = new Intent("top.zhangpy.mychat.UPDATE_MESSAGES")
-                .putExtra("contact_id", contactId);
-        sendBroadcast(intent);
+    companion object {
+        private const val TAG = "DownloadService"
+        const val EXTRA_CONTACT_ID: String = "contact_id"
+
+        // 启动Service的辅助方法
+        @JvmStatic
+        fun startService(context: Context, contactId: Int) {
+            val intent = Intent(context, DownloadService::class.java)
+            intent.putExtra(EXTRA_CONTACT_ID, contactId)
+            context.startService(intent)
+        }
     }
 }

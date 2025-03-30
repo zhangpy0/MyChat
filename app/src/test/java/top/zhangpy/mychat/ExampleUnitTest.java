@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.util.Log;
-
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,6 +24,7 @@ import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.data.repository.GroupRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.util.HashGenerator;
+import top.zhangpy.mychat.util.Logger;
 
 /**
  * Example local unit test, which will execute on the development machine (host).
