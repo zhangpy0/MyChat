@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import top.zhangpy.mychat.data.exception.NetException;
+import top.zhangpy.mychat.data.exception.NetExceptionHandler;
 import top.zhangpy.mychat.data.local.database.AppDatabase;
 import top.zhangpy.mychat.data.local.entity.ContactApply;
 import top.zhangpy.mychat.data.local.entity.Friend;
@@ -143,42 +143,42 @@ public class ContactRepository {
 
     public boolean updateFriendStatus(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.updateFriendStatus(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean sendGroupRequest(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.sendGroupRequest(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean sendFriendRequest(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.sendFriendRequest(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public UserProfileModel searchUser(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<UserProfileModel> resultModel = contactService.searchUser(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public GroupInfoModel searchGroup(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<GroupInfoModel> resultModel = contactService.searchGroup(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public boolean processGroupRequest(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.processGroupRequest(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean processFriendRequest(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.processFriendRequest(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public List<Integer> getGroups(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<List<Map<String, String>>> resultModel = contactService.getGroups(token, requestMapModel.toMap()).execute().body();
-        List<Map<String, String>> listMap = NetException.responseCheck(resultModel);
+        List<Map<String, String>> listMap = NetExceptionHandler.responseCheck(resultModel);
         List<Integer> list = new ArrayList<>();
         for (Map<String, String> map : listMap) {
             list.add(Integer.parseInt(Objects.requireNonNull(map.get("groupId"))));
@@ -188,13 +188,13 @@ public class ContactRepository {
 
     public Integer getGroupOwner(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<Map<String, String>> resultModel = contactService.getGroupOwner(token, requestMapModel.toMap()).execute().body();
-        Map<String, String> map =  NetException.responseCheck(resultModel);
+        Map<String, String> map =  NetExceptionHandler.responseCheck(resultModel);
         return Integer.parseInt(Objects.requireNonNull(map.get("userId")));
     }
 
     public List<Integer> getGroupMembers(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<List<Map<String, String>>> resultModel = contactService.getGroupMembers(token, requestMapModel.toMap()).execute().body();
-        List<Map<String, String >> listMap = NetException.responseCheck(resultModel);
+        List<Map<String, String >> listMap = NetExceptionHandler.responseCheck(resultModel);
         List<Integer> list = new ArrayList<>();
         for (Map<String, String> map : listMap) {
             list.add(Integer.parseInt(Objects.requireNonNull(map.get("userId"))));
@@ -204,32 +204,32 @@ public class ContactRepository {
 
     public List<FriendModel> getFriends(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<List<FriendModel>> resultModel = contactService.getFriends(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public List<ContactApplyModel> getContactApplyFromOthers(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<List<ContactApplyModel>> resultModel = contactService.getContactApplyFromOthers(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public List<ContactApplyModel> getContactApplyFromMe(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<List<ContactApplyModel>> resultModel = contactService.getContactApplyFromMe(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public boolean deleteFriend(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.deleteFriend(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean deleteGroupMember(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.deleteFriendFromGroup(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean addGroupMember(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = contactService.addFriendToGroup(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean updateContactApplyFromServer(String token, RequestMapModel requestMapModel) throws IOException {

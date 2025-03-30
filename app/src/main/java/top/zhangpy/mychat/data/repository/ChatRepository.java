@@ -17,7 +17,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
-import top.zhangpy.mychat.data.exception.NetException;
+import top.zhangpy.mychat.data.exception.NetExceptionHandler;
 import top.zhangpy.mychat.data.local.dao.DynamicChatDao;
 import top.zhangpy.mychat.data.local.database.ChatMessageDatabaseManager;
 import top.zhangpy.mychat.data.local.entity.ChatMessage;
@@ -142,8 +142,8 @@ public class ChatRepository {
     // no file: path set null
     @ConcurrentLock(params = {0, 1, 2, 3, 4, 5, 6})
     public boolean sendMessage(String userId, String receiverId, String groupId, String receiverType, String content, String messageType, String token, String path) throws IOException {
-        File file = null;
-        MultipartBody.Part filePart = null;
+        File file;
+        MultipartBody.Part filePart;
         if (path != null) {
             if (path.startsWith("content://")) {
                 file = new File(StorageHelper.getRealPathFromURI(context, path));
@@ -162,7 +162,7 @@ public class ChatRepository {
             groupId = "0";
         }
         ResultModel res =  chatService.sendMessage(userId, receiverId, groupId, receiverType, content, messageType, token, filePart).execute().body();
-        return NetException.responseCheck(res, 0);
+        return NetExceptionHandler.responseCheck(res, 0);
     }
 
     public List<ChatMessageModel> getMessages(String userId, long time, String token) throws IOException {
@@ -179,7 +179,7 @@ public class ChatRepository {
 //            }
 //        });
         ResultModel<List<ChatMessageModel>> res = chatService.getMessages(userId, time, token).execute().body();
-        return NetException.responseCheck(res);
+        return NetExceptionHandler.responseCheck(res);
     }
 
     public DownloadModel downloadFile(String userId, String messageId, String token) throws IOException {
@@ -444,6 +444,64 @@ public class ChatRepository {
         contactRepository.updateFriend(friend);
     }
 
+    public void sendMessageToServer(Integer userId, Integer friendId, String content, String messageType, String token, String path, int flagForRetry) throws IOException {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setSenderId(userId);
+        chatMessage.setReceiverId(friendId);
+        chatMessage.setReceiverType("user");
+        chatMessage.setContent(content);
+        chatMessage.setMessageType(messageType);
+        chatMessage.setFilePath(path);
+        chatMessage.setSendTime(new java.sql.Timestamp(System.currentTimeMillis()));
+        chatMessage.setIsRead(true);
+        chatMessage.setIsDownload(true);
+        String tableName = getTableName(friendId, userId);
+
+        int maxRetries = 3;
+        int retryDelay = 1000;
+        boolean sendSuccess = false;
+
+        // 重试循环仅针对网络发送操作
+        for (int retryCount = 0; retryCount < maxRetries && !sendSuccess; retryCount++) {
+            try {
+                sendMessage(userId.toString(), friendId.toString(), "0", "user", content, messageType, token, path);
+                sendSuccess = true;
+            } catch (Exception e) {
+                Logger.e("ChatRepository", "Send failed (attempt " + (retryCount + 1) + ")", e);
+
+                if (retryCount == maxRetries - 1) {
+                    throw new IOException("Message send failed after " + maxRetries + " attempts", e);
+                }
+
+                try {
+                    Thread.sleep(retryDelay * (int) Math.pow(2, retryCount)); // 指数退避
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Message send interrupted", ie);
+                }
+            }
+        }
+
+        // 网络发送成功后的本地操作
+        if (sendSuccess) {
+            try {
+                if (messageType.equals("file")) {
+                    String newContent = content + ":" + new File(path).length();
+                    chatMessage.setContent(newContent);
+                    chatMessage.setFileName(new File(path).getName());
+                }
+                insertMessage(tableName, chatMessage);
+
+                Friend friend = contactRepository.getFriendByFriendId(friendId);
+                friend.setMessageTime(chatMessage.getSendTime());
+                contactRepository.updateFriend(friend);
+            } catch (Exception e) {
+                Logger.e("ChatRepository", "Local save failed after successful send", e);
+                throw new IOException("Local data processing failed", e);
+            }
+        }
+    }
+
     // TODO
     public void sendMessageToServer(Integer userId, Integer otherId, Integer groupId, String content, String messageType, String token, String path) throws IOException {
         ChatMessage chatMessage = new ChatMessage();
@@ -526,6 +584,6 @@ public class ChatRepository {
 
     public Map<String, String> getFileInfo(String userId, String messageId, String token) throws IOException {
         ResultModel<Map<String, String>> res = chatService.getFileInfo(userId, messageId, token).execute().body();
-        return NetException.responseCheck(res);
+        return NetExceptionHandler.responseCheck(res);
     }
 }

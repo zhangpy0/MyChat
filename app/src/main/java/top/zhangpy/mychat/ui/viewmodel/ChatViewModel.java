@@ -20,14 +20,17 @@ import top.zhangpy.mychat.data.repository.ContactRepository;
 import top.zhangpy.mychat.data.repository.UserRepository;
 import top.zhangpy.mychat.ui.model.MessageListItem;
 import top.zhangpy.mychat.util.Logger;
+import top.zhangpy.mychat.util.threadpool.AppExecutors;
 
 public class ChatViewModel extends AndroidViewModel {
 
     private final ChatRepository chatRepository;
 
-    private ContactRepository contactRepository;
+    private final ContactRepository contactRepository;
 
     private final UserRepository userRepository;
+
+    private final AppExecutors appExecutors = AppExecutors.Companion.get();
 
     @Getter
     private MutableLiveData<List<MessageListItem>> messages = new MutableLiveData<>();
@@ -56,7 +59,7 @@ public class ChatViewModel extends AndroidViewModel {
     public void loadMyAvatar() {
         Integer userId = loadUserId();
         Logger.d("ChatViewModel", "loadMyAvatar: " + userId);
-        Executors.newSingleThreadExecutor().execute(() -> {
+        appExecutors.databaseIO().execute(() -> {
             try {
                 String path = userRepository.getUserProfileById(userId).getAvatarPath();
                 myAvatarPath.postValue(path); // 设置 LiveData
@@ -71,7 +74,7 @@ public class ChatViewModel extends AndroidViewModel {
         Integer userId = loadUserId();
         String token = loadToken();
         Logger.d("ChatViewModel", "loadFriendAvatar: " + friendId);
-        Executors.newSingleThreadExecutor().execute(() -> {
+        appExecutors.databaseIO().execute(() -> {
             try {
                 UserProfile friendProfile = userRepository.getUserProfileById(friendId);
                 if (friendProfile == null || friendProfile.getAvatarPath() == null) {
@@ -132,7 +135,7 @@ public class ChatViewModel extends AndroidViewModel {
     public void sendMessageToFriend(Integer friendId, String content, String messageType, String filePath) {
         Integer userId = loadUserId();
         String token = loadToken();
-        Executors.newSingleThreadExecutor().execute(() -> {
+        appExecutors.networkIO().execute(() -> {
             try {
                 chatRepository.sendMessageToServer(userId, friendId, content, messageType, token, filePath);
                 updateMessagesFromLocal(friendId);

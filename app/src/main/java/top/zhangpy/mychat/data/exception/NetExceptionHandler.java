@@ -2,7 +2,7 @@ package top.zhangpy.mychat.data.exception;
 
 import top.zhangpy.mychat.data.remote.model.ResultModel;
 
-public class NetException {
+public class NetExceptionHandler {
 
     public static boolean responseCheck(ResultModel resultModel, int flag) {
         if (resultModel == null) {

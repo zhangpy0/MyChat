@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import top.zhangpy.mychat.data.exception.NetException;
+import top.zhangpy.mychat.data.exception.NetExceptionHandler;
 import top.zhangpy.mychat.data.local.database.AppDatabase;
 import top.zhangpy.mychat.data.local.entity.User;
 import top.zhangpy.mychat.data.local.entity.UserProfile;
@@ -95,52 +95,52 @@ public class UserRepository {
     // 登录
     public UserAccountModel login(RequestMapModel requestMapModel) throws IOException {
         ResultModel<UserAccountModel> resultModel = userAccountService.login(requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public boolean register(RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userAccountService.register(requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean changePassword(RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userAccountService.changePassword(requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean sendEmailForRegister(RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userCodeService.sendEmailForRegister(requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean sendEmailForChangePassword(RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userCodeService.sendEmailForChangePassword(requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public UserProfileModel getUserProfile(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<UserProfileModel> resultModel = contactService.searchUser(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public UserAvatarModel getUserAvatar(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel<UserAvatarModel> resultModel = userProfileService.getUserAvatar(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel);
+        return NetExceptionHandler.responseCheck(resultModel);
     }
 
     public boolean updateUserRegion(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userProfileService.updateUserRegion(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean updateUserNickname(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userProfileService.updateUserNickname(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean updateUserGender(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userProfileService.updateUserGender(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public boolean updateUserAvatar(String token, String userId, String path) throws IOException {
@@ -148,7 +148,7 @@ public class UserRepository {
         RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("avatar", file.getName(), requestBody);
         ResultModel resultModel = userProfileService.updateUserAvatar(token, userId, body).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     public void updateUserInfoFromServer(String token, Integer userId, Integer friendId, Context context) throws IOException {
@@ -204,7 +204,7 @@ public class UserRepository {
 
     public boolean check(String token, RequestMapModel requestMapModel) throws IOException {
         ResultModel resultModel = userAccountService.check(token, requestMapModel.toMap()).execute().body();
-        return NetException.responseCheck(resultModel, 0);
+        return NetExceptionHandler.responseCheck(resultModel, 0);
     }
 
     private void saveToken(String token, Context context) {
