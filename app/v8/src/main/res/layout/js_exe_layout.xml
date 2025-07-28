@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="#D7D7D7">
+
+    <!-- 状态栏间距 -->
+    <View
+        android:id="@+id/statusBarSpacer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/codeContainer"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <!-- 上方代码编辑区（带行号） -->
+    <HorizontalScrollView
+        android:id="@+id/codeContainer"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/statusBarSpacer">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!-- 行号显示区域 -->
+            <TextView
+                android:id="@+id/lineNumbers"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#3F3F3F"
+                android:text="1\n"
+                android:textColor="#AAAAAA"
+                android:textSize="16sp"
+                android:typeface="monospace"
+                android:gravity="right"
+                android:paddingTop="8dp"
+                android:paddingRight="8dp"
+                android:paddingLeft="8dp"
+                android:lineSpacingExtra="4dp"/>
+
+            <!-- 代码编辑区域 -->
+            <EditText
+                android:id="@+id/codeEditor"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:fontFamily="monospace"
+                android:gravity="top|start"
+                android:hint="// 输入代码..."
+                android:inputType="textMultiLine"
+                android:minHeight="200dp"
+                android:padding="8dp"
+                android:scrollbars="vertical"
+                android:text=""
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:lineSpacingExtra="4dp"/>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="#444"
+        app:layout_constraintTop_toBottomOf="@id/codeContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 下方控制台输出区（带行号） -->
+    <ScrollView
+        android:id="@+id/consoleContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!-- 控制台行号区域 -->
+            <TextView
+                android:id="@+id/consoleLineNumbers"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="#2D2D2D"
+                android:text="1\n"
+                android:textColor="#888888"
+                android:textSize="14sp"
+                android:typeface="monospace"
+                android:gravity="right"
+                android:paddingTop="12dp"
+                android:paddingRight="8dp"
+                android:paddingLeft="8dp"/>
+
+            <!-- 控制台输出区域 -->
+            <TextView
+                android:id="@+id/consoleOutput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#151515"
+                android:fontFamily="monospace"
+                android:minHeight="150dp"
+                android:padding="12dp"
+                android:scrollbars="vertical"
+                android:text=""
+                android:textColor="#BBBBBB"
+                android:textSize="14sp"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/runButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="12dp"
+        android:src="@drawable/ic_check"
+        android:scaleType="center"
+        app:backgroundTint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="@id/codeContainer"
+        app:layout_constraintEnd_toEndOf="@id/codeContainer"
+        app:tint="#FFFFFF" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

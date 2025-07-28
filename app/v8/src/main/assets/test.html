@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        p {
+            color: #333333;
+            font-size: 80px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0;
+        }
+    </style>
+    <script>
+        console.log('Hello, Native Android!');
+        function onButtonClick() {
+            const p = document.getElementById('text1');
+            p.textContent = '你点击了按钮！';
+            p.style.color = '#007bff';
+            console.log('Button clicked, text changed to: ' + p.textContent);
+            p.updateNode();
+        }
+    </script>
+    <title></title>
+</head>
+<body>
+<div id="main" class="container" style="padding: 10px;width: 300px; height: 300px;">
+    <p id="text1" style="font-weight: bold;">Hello, Native Android!</p>
+    <img src="http://gips0.baidu.com/it/u=3822353666,2757632348&fm=3028&app=3028&f=JPEG&fmt=auto?w=720&h=1280" onclick="onButtonClick()" style="width: 100px; height: 100px;"/>
+</div>
+</body>
+</html>

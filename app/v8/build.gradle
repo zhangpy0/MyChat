@@ -1,0 +1,56 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'top.zhangpy.v8'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 26
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    // https://mvnrepository.com/artifact/com.eclipsesource.j2v8/j2v8
+    implementation("com.eclipsesource.j2v8:j2v8:6.2.1@aar")
+
+    // jsoup HTML parser library @ https://jsoup.org/
+    implementation 'org.jsoup:jsoup:1.21.1'
+
+    // https://mvnrepository.com/artifact/net.sf.cssbox/jstyleparser
+    implementation("net.sf.cssbox:jstyleparser:4.0.1")
+
+    // https://mvnrepository.com/artifact/com.google.android.flexbox/flexbox
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
+
+    // https://mvnrepository.com/artifact/com.github.bumptech.glide/glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
+}

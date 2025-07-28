@@ -7,20 +7,20 @@ import lombok.Data;
 @Data
 public class MessageListItem {
 
-    private int id;
+    public int id;
 
-    private boolean isMe;
+    public boolean isMe;
 
-    private String messageType; // text, image, file
+    public String messageType; // text, image, file
 
-    private String filePath;
+    public String filePath;
 
-    private String content;
+    public String content;
 
-    private Timestamp sendTime;
+    public Timestamp sendTime;
 
-    private String fileName;
+    public String fileName;
 
-    private Long fileSize;
+    public Long fileSize;
 
 }

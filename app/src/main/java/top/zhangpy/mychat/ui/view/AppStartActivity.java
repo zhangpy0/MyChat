@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import top.zhangpy.mychat.R;
+import top.zhangpy.v8.ui.jsconsole.JsConsoleActivity;
 
 public class AppStartActivity extends Activity {
 
@@ -17,7 +18,7 @@ public class AppStartActivity extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(AppStartActivity.this, WelcomeActivity.class);
+                Intent intent = new Intent(AppStartActivity.this, JsConsoleActivity.class);
                 startActivity(intent);
                 finish();
             }

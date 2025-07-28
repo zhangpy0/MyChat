@@ -7,12 +7,12 @@ import lombok.Data;
 
 @Data
 public class ServerMessageModel implements Serializable {
-    private Integer senderId;
-    private Integer receiverId;
-    private Integer groupId; // 0: user, other: group
-    private String content;
-    private Long time;
-    private String messageType; // 0: text, 1: image, 2: file
+    public Integer senderId;
+    public Integer receiverId;
+    public Integer groupId; // 0: user, other: group
+    public String content;
+    public Long time;
+    public String messageType; // 0: text, 1: image, 2: file
 
     public ServerMessageModel(Integer senderId, Integer receiverId, Integer groupId, String content, String messageType) {
         this.senderId = senderId;

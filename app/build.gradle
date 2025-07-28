@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -41,44 +41,45 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+    implementation project(':app:v8')
+//    implementation "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
 
     implementation 'androidx.annotation:annotation:1.9.1'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.2'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.9.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2'
 
     // https://mvnrepository.com/artifact/androidx.work/work-runtime-ktx
-    implementation 'androidx.work:work-runtime-ktx:2.10.0'
+    implementation 'androidx.work:work-runtime-ktx:2.10.2'
 
 
     // https://mvnrepository.com/artifact/org.projectlombok/lombok
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:retrofit:3.0.0'
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit-mock
-    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.11.0'
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:3.0.0'
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-gson
-    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-jackson
-    implementation 'com.squareup.retrofit2:converter-jackson:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-jackson:3.0.0'
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/adapter-rxjava
-    implementation 'com.squareup.retrofit2:adapter-rxjava:2.11.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:3.0.0'
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:okhttp:5.1.0'
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/logging-interceptor
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.1.0'
 
 
 
-    def room_version = "2.6.1"
+    def room_version = "2.7.2"
 
     implementation "androidx.room:room-runtime:$room_version"
 
@@ -120,4 +121,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.github.chrisbanes/PhotoView
     implementation 'com.github.chrisbanes:PhotoView:462338'
+
+//    // https://mvnrepository.com/artifact/com.eclipsesource.j2v8/j2v8
+//    implementation("com.eclipsesource.j2v8:j2v8:6.2.1@aar")
 }

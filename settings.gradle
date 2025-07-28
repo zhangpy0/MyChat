@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MyChat"
 include ':app'
+include ':app:v8'
